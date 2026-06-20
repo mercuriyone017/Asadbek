@@ -305,7 +305,7 @@ bot.onText(/\/users/, (msg) => {
 
 // Serve app
 app.get('/app', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+  res.sendFile(path.join(__dirname, 'index.html'));
 });
 
 app.listen(PORT, () => console.log(`MIRAGE Bot running on port ${PORT}`));
