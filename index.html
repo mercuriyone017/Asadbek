@@ -6,800 +6,448 @@
 <title>MIRAGE Game Club</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <style>
-  :root {
-    --bg: #0a0a0f;
-    --bg2: #111118;
-    --bg3: #1a1a24;
-    --card: #16161f;
-    --border: rgba(255,255,255,0.07);
-    --accent: #7C6FFF;
-    --accent2: #5B4FE0;
-    --gold: #F5C842;
-    --green: #2ECC71;
-    --red: #E74C3C;
-    --yellow: #F39C12;
-    --text: #FFFFFF;
-    --text2: rgba(255,255,255,0.55);
-    --text3: rgba(255,255,255,0.3);
-    --radius: 14px;
-    --radius-sm: 10px;
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-  html, body { background: var(--bg); color: var(--text); font-family: -apple-system, 'SF Pro Display', 'Segoe UI', sans-serif; min-height: 100vh; overflow-x: hidden; }
-
-  /* NAV */
-  .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: var(--bg2); border-top: 1px solid var(--border); display: flex; z-index: 100; padding-bottom: env(safe-area-inset-bottom); }
-  .nav-btn { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 10px 4px 8px; background: none; border: none; color: var(--text3); cursor: pointer; transition: color 0.2s; font-size: 10px; }
-  .nav-btn.active { color: var(--accent); }
-  .nav-btn svg { width: 22px; height: 22px; }
-
-  /* SCREENS */
-  .screen { display: none; flex-direction: column; min-height: 100vh; padding-bottom: 70px; }
-  .screen.active { display: flex; }
-
-  /* HOME */
-  .home-hero { background: linear-gradient(160deg, #1a1030 0%, #0d0d1a 60%); padding: 20px 16px 24px; position: relative; overflow: hidden; }
-  .home-hero::before { content: ''; position: absolute; top: -40px; right: -40px; width: 180px; height: 180px; background: radial-gradient(circle, rgba(124,111,255,0.15) 0%, transparent 70%); border-radius: 50%; }
-  .hero-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; }
-  .hero-greeting { font-size: 13px; color: var(--text2); margin-bottom: 3px; }
-  .hero-name { font-size: 20px; font-weight: 600; letter-spacing: -0.3px; }
-  .level-badge { background: rgba(245,200,66,0.15); border: 1px solid rgba(245,200,66,0.3); color: var(--gold); font-size: 11px; font-weight: 600; padding: 4px 10px; border-radius: 20px; white-space: nowrap; }
-  .balance-block { background: rgba(124,111,255,0.1); border: 1px solid rgba(124,111,255,0.2); border-radius: var(--radius); padding: 16px; }
-  .bal-label { font-size: 11px; color: var(--text2); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.8px; }
-  .bal-amount { font-size: 32px; font-weight: 700; letter-spacing: -1px; color: #fff; }
-  .bal-amount span { font-size: 16px; font-weight: 400; color: var(--text2); margin-left: 4px; }
-  .bal-sub { font-size: 12px; color: var(--accent); margin-top: 6px; }
-
-  .quick-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 16px; }
-  .quick-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 14px; cursor: pointer; transition: transform 0.15s, background 0.15s; display: flex; flex-direction: column; gap: 10px; }
-  .quick-card:active { transform: scale(0.96); background: var(--bg3); }
-  .quick-icon { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; }
-  .quick-icon.purple { background: rgba(124,111,255,0.15); }
-  .quick-icon.green { background: rgba(46,204,113,0.15); }
-  .quick-icon.gold { background: rgba(245,200,66,0.15); }
-  .quick-icon.red { background: rgba(231,76,60,0.15); }
-  .quick-icon svg { width: 20px; height: 20px; }
-  .quick-title { font-size: 13px; font-weight: 600; }
-  .quick-sub { font-size: 11px; color: var(--text2); }
-
-  .section { padding: 0 16px 16px; }
-  .section-head { font-size: 12px; font-weight: 600; color: var(--text2); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 10px; }
-
-  .stats-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
-  .stat-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px 10px; text-align: center; }
-  .stat-val { font-size: 20px; font-weight: 700; }
-  .stat-lbl { font-size: 10px; color: var(--text2); margin-top: 2px; }
-
-  .active-session { background: var(--card); border: 1px solid rgba(46,204,113,0.2); border-radius: var(--radius); padding: 14px; display: flex; align-items: center; gap: 12px; }
-  .session-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); box-shadow: 0 0 8px var(--green); flex-shrink: 0; }
-  .session-info { flex: 1; }
-  .session-name { font-size: 14px; font-weight: 600; }
-  .session-time { font-size: 12px; color: var(--text2); margin-top: 2px; }
-  .session-timer { font-size: 18px; font-weight: 700; color: var(--green); font-variant-numeric: tabular-nums; }
-
-  /* BOOKING / PC MAP */
-  .map-header { padding: 16px 16px 8px; }
-  .map-title { font-size: 18px; font-weight: 700; margin-bottom: 4px; }
-  .map-sub { font-size: 13px; color: var(--text2); }
-  .legend { display: flex; gap: 16px; padding: 8px 16px 12px; }
-  .leg-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text2); }
-  .leg-dot { width: 10px; height: 10px; border-radius: 50%; }
-
-  .zone-label { font-size: 11px; font-weight: 600; color: var(--text2); text-transform: uppercase; letter-spacing: 1px; padding: 0 16px 8px; }
-  .pc-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; padding: 0 16px 16px; }
-  .pc-slot { background: var(--card); border-radius: var(--radius-sm); padding: 10px 6px; text-align: center; cursor: pointer; border: 1.5px solid transparent; transition: all 0.15s; position: relative; }
-  .pc-slot.free { border-color: rgba(46,204,113,0.3); }
-  .pc-slot.busy { border-color: rgba(231,76,60,0.2); background: rgba(231,76,60,0.05); cursor: not-allowed; opacity: 0.6; }
-  .pc-slot.booked { border-color: rgba(243,156,18,0.3); background: rgba(243,156,18,0.05); cursor: not-allowed; opacity: 0.7; }
-  .pc-slot.vip { border-color: rgba(245,200,66,0.3); background: rgba(245,200,66,0.04); }
-  .pc-slot.selected { border-color: var(--accent); background: rgba(124,111,255,0.1); }
-  .pc-slot:active:not(.busy):not(.booked) { transform: scale(0.93); }
-  .pc-num { font-size: 14px; font-weight: 700; }
-  .pc-status { font-size: 9px; margin-top: 3px; }
-  .pc-slot.free .pc-status { color: var(--green); }
-  .pc-slot.busy .pc-status { color: var(--red); }
-  .pc-slot.booked .pc-status { color: var(--yellow); }
-  .pc-slot.vip .pc-num::after { content: '★'; font-size: 8px; color: var(--gold); margin-left: 2px; }
-
-  .booking-panel { margin: 0 16px 16px; background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; }
-  .bp-title { font-size: 13px; color: var(--text2); margin-bottom: 12px; }
-  .time-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 14px; }
-  .time-chip { background: var(--bg3); border: 1px solid var(--border); border-radius: 8px; padding: 10px; text-align: center; font-size: 13px; cursor: pointer; transition: all 0.15s; }
-  .time-chip.sel { border-color: var(--accent); background: rgba(124,111,255,0.1); color: var(--accent); font-weight: 600; }
-  .dur-row { display: flex; gap: 8px; margin-bottom: 14px; }
-  .dur-chip { flex: 1; background: var(--bg3); border: 1px solid var(--border); border-radius: 8px; padding: 8px 4px; text-align: center; font-size: 12px; cursor: pointer; transition: all 0.15s; }
-  .dur-chip.sel { border-color: var(--accent); background: rgba(124,111,255,0.1); color: var(--accent); }
-  .book-cost { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; font-size: 13px; }
-  .book-cost .cost-val { font-size: 18px; font-weight: 700; color: var(--accent); }
-  .btn-primary { background: var(--accent); color: white; border: none; border-radius: var(--radius-sm); padding: 14px; width: 100%; font-size: 15px; font-weight: 600; cursor: pointer; transition: opacity 0.15s; }
-  .btn-primary:active { opacity: 0.8; }
-  .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
-
-  /* BALANCE / TOPUP */
-  .topup-hero { background: linear-gradient(160deg, #0f1a0f 0%, #0a0a0f 60%); padding: 20px 16px 24px; }
-  .topup-bal { font-size: 11px; color: var(--text2); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 6px; }
-  .topup-amount { font-size: 36px; font-weight: 700; letter-spacing: -1px; }
-  .topup-amount span { font-size: 16px; font-weight: 400; color: var(--text2); margin-left: 4px; }
-  .cashback-info { display: flex; align-items: center; gap: 6px; margin-top: 8px; font-size: 12px; color: var(--green); }
-
-  .amounts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 16px; }
-  .amt-card { background: var(--card); border: 1.5px solid var(--border); border-radius: var(--radius); padding: 14px; cursor: pointer; transition: all 0.15s; }
-  .amt-card.sel { border-color: var(--accent); background: rgba(124,111,255,0.08); }
-  .amt-card:active { transform: scale(0.96); }
-  .amt-price { font-size: 17px; font-weight: 700; }
-  .amt-time { font-size: 11px; color: var(--text2); margin-top: 3px; }
-  .amt-cashback { font-size: 11px; color: var(--green); margin-top: 4px; }
-
-  .pay-methods { padding: 0 16px 16px; }
-  .pay-title { font-size: 12px; color: var(--text2); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 10px; }
-  .pay-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
-  .pay-card { background: var(--card); border: 1.5px solid var(--border); border-radius: var(--radius-sm); padding: 12px 8px; text-align: center; cursor: pointer; transition: all 0.15s; }
-  .pay-card.sel { border-color: var(--accent); background: rgba(124,111,255,0.08); }
-  .pay-card:active { transform: scale(0.95); }
-  .pay-logo { font-size: 20px; margin-bottom: 4px; }
-  .pay-name { font-size: 11px; color: var(--text2); }
-  .pay-btn-wrap { padding: 0 16px 16px; }
-
-  /* BAR */
-  .bar-cats { display: flex; gap: 8px; padding: 12px 16px; overflow-x: auto; }
-  .bar-cats::-webkit-scrollbar { display: none; }
-  .cat-chip { background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 7px 14px; font-size: 13px; white-space: nowrap; cursor: pointer; transition: all 0.15s; flex-shrink: 0; }
-  .cat-chip.sel { background: var(--accent); border-color: var(--accent); color: white; font-weight: 600; }
-  .bar-items { padding: 0 16px; display: flex; flex-direction: column; gap: 8px; }
-  .bar-item { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px; display: flex; align-items: center; gap: 12px; }
-  .bar-emoji { font-size: 28px; width: 44px; text-align: center; }
-  .bar-info { flex: 1; }
-  .bar-name { font-size: 14px; font-weight: 600; }
-  .bar-desc { font-size: 12px; color: var(--text2); margin-top: 2px; }
-  .bar-price { font-size: 15px; font-weight: 700; color: var(--accent); }
-  .bar-add { width: 36px; height: 36px; background: var(--accent); border: none; border-radius: 10px; color: white; font-size: 20px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: opacity 0.15s; }
-  .bar-add:active { opacity: 0.7; }
-  .cart-bar { position: fixed; bottom: 70px; left: 16px; right: 16px; background: var(--accent); border-radius: var(--radius); padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; z-index: 90; transform: translateY(100px); opacity: 0; transition: all 0.3s; }
-  .cart-bar.show { transform: translateY(0); opacity: 1; }
-  .cart-count { font-size: 13px; color: rgba(255,255,255,0.8); }
-  .cart-total { font-size: 16px; font-weight: 700; }
-  .cart-btn { background: white; color: var(--accent); border: none; border-radius: 8px; padding: 8px 16px; font-size: 13px; font-weight: 700; cursor: pointer; }
-
-  /* PROFILE */
-  .profile-hero { background: linear-gradient(160deg, #1a1030 0%, #0d0d1a 60%); padding: 20px 16px; display: flex; align-items: center; gap: 14px; }
-  .avatar { width: 60px; height: 60px; border-radius: 50%; background: var(--accent); display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: 700; flex-shrink: 0; }
-  .profile-name { font-size: 18px; font-weight: 700; }
-  .profile-id { font-size: 12px; color: var(--text2); margin-top: 2px; }
-  .level-progress { margin-top: 10px; }
-  .lp-top { display: flex; justify-content: space-between; font-size: 11px; color: var(--text2); margin-bottom: 6px; }
-  .lp-bar { background: rgba(255,255,255,0.1); border-radius: 4px; height: 6px; overflow: hidden; }
-  .lp-fill { height: 100%; background: linear-gradient(90deg, var(--accent), #a594ff); border-radius: 4px; transition: width 0.8s ease; }
-
-  .info-list { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); margin: 16px; overflow: hidden; }
-  .info-row { display: flex; align-items: center; padding: 14px 16px; border-bottom: 1px solid var(--border); gap: 12px; }
-  .info-row:last-child { border-bottom: none; }
-  .info-icon { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-  .info-icon svg { width: 16px; height: 16px; }
-  .info-label { font-size: 13px; color: var(--text2); flex: 1; }
-  .info-val { font-size: 14px; font-weight: 600; }
-
-  .history-list { padding: 0 16px; display: flex; flex-direction: column; gap: 8px; }
-  .hist-item { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px 14px; display: flex; align-items: center; gap: 10px; }
-  .hist-icon { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-  .hist-icon svg { width: 16px; height: 16px; }
-  .hist-info { flex: 1; }
-  .hist-title { font-size: 13px; font-weight: 600; }
-  .hist-date { font-size: 11px; color: var(--text2); margin-top: 2px; }
-  .hist-amt { font-size: 14px; font-weight: 700; }
-  .hist-amt.plus { color: var(--green); }
-  .hist-amt.minus { color: var(--red); }
-
-  /* TOAST */
-  .toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-80px); background: #1e1e2e; border: 1px solid var(--border); color: white; padding: 12px 20px; border-radius: 30px; font-size: 13px; font-weight: 500; z-index: 999; transition: transform 0.3s; white-space: nowrap; box-shadow: 0 8px 24px rgba(0,0,0,0.4); }
-  .toast.show { transform: translateX(-50%) translateY(0); }
-  .toast.success { border-color: rgba(46,204,113,0.4); }
-  .toast.error { border-color: rgba(231,76,60,0.4); }
-
-  /* MODAL */
-  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 200; display: flex; align-items: flex-end; opacity: 0; pointer-events: none; transition: opacity 0.3s; }
-  .modal-overlay.show { opacity: 1; pointer-events: all; }
-  .modal { background: var(--bg2); border-radius: 20px 20px 0 0; padding: 20px 20px calc(20px + env(safe-area-inset-bottom)); width: 100%; transform: translateY(100%); transition: transform 0.3s; }
-  .modal-overlay.show .modal { transform: translateY(0); }
-  .modal-handle { width: 36px; height: 4px; background: var(--border); border-radius: 2px; margin: 0 auto 20px; }
-  .modal-title { font-size: 18px; font-weight: 700; margin-bottom: 6px; }
-  .modal-sub { font-size: 13px; color: var(--text2); margin-bottom: 20px; }
-  .modal-detail { background: var(--bg3); border-radius: var(--radius-sm); padding: 14px; margin-bottom: 16px; display: flex; flex-direction: column; gap: 8px; }
-  .md-row { display: flex; justify-content: space-between; font-size: 13px; }
-  .md-row .lbl { color: var(--text2); }
-  .md-row .val { font-weight: 600; }
-  .modal-btns { display: flex; gap: 10px; }
-  .btn-cancel { flex: 1; background: var(--bg3); border: 1px solid var(--border); color: var(--text2); border-radius: var(--radius-sm); padding: 14px; font-size: 15px; cursor: pointer; }
-  .btn-confirm { flex: 2; background: var(--accent); border: none; color: white; border-radius: var(--radius-sm); padding: 14px; font-size: 15px; font-weight: 600; cursor: pointer; }
+:root{--bg:#0a0a0f;--bg2:#111118;--bg3:#1a1a24;--card:#16161f;--border:rgba(255,255,255,0.07);--accent:#7C6FFF;--gold:#F5C842;--green:#2ECC71;--red:#E74C3C;--yellow:#F39C12;--text:#FFFFFF;--text2:rgba(255,255,255,0.55);--text3:rgba(255,255,255,0.3);--r:14px;--rs:10px}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{background:var(--bg);color:var(--text);font-family:-apple-system,'SF Pro Display','Segoe UI',sans-serif;min-height:100vh;overflow-x:hidden}
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:var(--bg2);border-top:1px solid var(--border);display:flex;z-index:100;padding-bottom:env(safe-area-inset-bottom)}
+.nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:10px 4px 8px;background:none;border:none;color:var(--text3);cursor:pointer;font-size:10px;-webkit-appearance:none}
+.nav-btn.active{color:var(--accent)}
+.nav-btn svg{width:22px;height:22px}
+.screen{display:none;flex-direction:column;min-height:100vh;padding-bottom:70px}
+.screen.active{display:flex}
+.home-hero{background:linear-gradient(160deg,#1a1030 0%,#0d0d1a 60%);padding:20px 16px 24px}
+.level-badge{background:rgba(245,200,66,0.15);border:1px solid rgba(245,200,66,0.3);color:var(--gold);font-size:11px;font-weight:600;padding:4px 10px;border-radius:20px}
+.balance-block{background:rgba(124,111,255,0.1);border:1px solid rgba(124,111,255,0.2);border-radius:var(--r);padding:16px;margin-top:16px}
+.bal-label{font-size:11px;color:var(--text2);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.8px}
+.bal-amount{font-size:32px;font-weight:700;color:#fff}
+.bal-amount span{font-size:16px;font-weight:400;color:var(--text2);margin-left:4px}
+.bal-sub{font-size:12px;color:var(--accent);margin-top:6px}
+.quick-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:16px}
+.quick-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:16px 14px;cursor:pointer;display:flex;flex-direction:column;gap:10px;-webkit-appearance:none}
+.quick-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center}
+.quick-icon.purple{background:rgba(124,111,255,0.15)}
+.quick-icon.green{background:rgba(46,204,113,0.15)}
+.quick-icon.gold{background:rgba(245,200,66,0.15)}
+.quick-icon.red{background:rgba(231,76,60,0.15)}
+.quick-icon svg{width:20px;height:20px}
+.quick-title{font-size:13px;font-weight:600}
+.quick-sub{font-size:11px;color:var(--text2)}
+.section{padding:0 16px 16px}
+.section-head{font-size:12px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:10px}
+.stats-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:var(--rs);padding:12px 10px;text-align:center}
+.stat-val{font-size:20px;font-weight:700}
+.stat-lbl{font-size:10px;color:var(--text2);margin-top:2px}
+.active-session{background:var(--card);border:1px solid rgba(46,204,113,0.2);border-radius:var(--r);padding:14px;display:flex;align-items:center;gap:12px}
+.session-dot{width:8px;height:8px;border-radius:50%;background:var(--green);flex-shrink:0}
+.session-info{flex:1}
+.session-name{font-size:14px;font-weight:600}
+.session-time{font-size:12px;color:var(--text2);margin-top:2px}
+.session-timer{font-size:18px;font-weight:700;color:var(--green)}
+.map-header{padding:16px 16px 8px}
+.map-title{font-size:18px;font-weight:700;margin-bottom:4px}
+.legend{display:flex;gap:16px;padding:8px 16px 12px}
+.leg-item{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text2)}
+.leg-dot{width:10px;height:10px;border-radius:50%}
+.zone-label{font-size:11px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:1px;padding:0 16px 8px}
+.pc-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:0 16px 16px}
+.pc-slot{background:var(--card);border-radius:var(--rs);padding:10px 6px;text-align:center;cursor:pointer;border:1.5px solid transparent}
+.pc-slot.free{border-color:rgba(46,204,113,0.3)}
+.pc-slot.busy{border-color:rgba(231,76,60,0.2);opacity:0.6;cursor:not-allowed}
+.pc-slot.booked{border-color:rgba(243,156,18,0.3);opacity:0.7;cursor:not-allowed}
+.pc-slot.selected{border-color:var(--accent);background:rgba(124,111,255,0.1)}
+.pc-num{font-size:14px;font-weight:700}
+.pc-status{font-size:9px;margin-top:3px}
+.pc-slot.free .pc-status{color:var(--green)}
+.pc-slot.busy .pc-status{color:var(--red)}
+.pc-slot.booked .pc-status{color:var(--yellow)}
+.booking-panel{margin:0 12px 16px;background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:16px}
+.time-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
+.time-chip{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px;text-align:center;font-size:13px;cursor:pointer}
+.time-chip.sel{border-color:var(--accent);background:rgba(124,111,255,0.1);color:var(--accent);font-weight:600}
+.dur-row{display:flex;gap:8px;margin-bottom:14px}
+.dur-chip{flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:8px 4px;text-align:center;font-size:12px;cursor:pointer}
+.dur-chip.sel{border-color:var(--accent);background:rgba(124,111,255,0.1);color:var(--accent)}
+.book-cost{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;font-size:13px}
+.cost-val{font-size:18px;font-weight:700;color:var(--accent)}
+.btn-primary{background:var(--accent);color:white;border:none;border-radius:var(--rs);padding:14px;width:100%;font-size:15px;font-weight:600;cursor:pointer}
+.topup-hero{background:linear-gradient(160deg,#0f1a0f 0%,#0a0a0f 60%);padding:20px 16px 24px}
+.amounts-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:16px}
+.amt-card{background:var(--card);border:1.5px solid var(--border);border-radius:var(--r);padding:14px;cursor:pointer}
+.amt-card.sel{border-color:var(--accent);background:rgba(124,111,255,0.08)}
+.amt-price{font-size:17px;font-weight:700}
+.amt-time{font-size:11px;color:var(--text2);margin-top:3px}
+.amt-cashback{font-size:11px;color:var(--green);margin-top:4px}
+.pay-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.pay-card{background:var(--card);border:1.5px solid var(--border);border-radius:var(--rs);padding:12px 8px;text-align:center;cursor:pointer}
+.pay-card.sel{border-color:var(--accent);background:rgba(124,111,255,0.08)}
+.pay-logo{font-size:20px;margin-bottom:4px}
+.pay-name{font-size:11px;color:var(--text2)}
+.bar-cats{display:flex;gap:8px;padding:12px 16px;overflow-x:auto}
+.bar-cats::-webkit-scrollbar{display:none}
+.cat-chip{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:7px 14px;font-size:13px;white-space:nowrap;cursor:pointer;flex-shrink:0}
+.cat-chip.sel{background:var(--accent);border-color:var(--accent);color:white;font-weight:600}
+.bar-items{padding:0 16px;display:flex;flex-direction:column;gap:8px}
+.bar-item{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:14px;display:flex;align-items:center;gap:12px}
+.bar-emoji{font-size:28px;width:44px;text-align:center}
+.bar-info{flex:1}
+.bar-name{font-size:14px;font-weight:600}
+.bar-desc{font-size:12px;color:var(--text2);margin-top:2px}
+.bar-price{font-size:15px;font-weight:700;color:var(--accent)}
+.bar-add{width:36px;height:36px;background:var(--accent);border:none;border-radius:10px;color:white;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.cart-bar{position:fixed;bottom:70px;left:16px;right:16px;background:var(--accent);border-radius:var(--r);padding:14px 16px;display:flex;align-items:center;justify-content:space-between;z-index:90;transform:translateY(100px);opacity:0;transition:all 0.3s}
+.cart-bar.show{transform:translateY(0);opacity:1}
+.cart-btn{background:white;color:var(--accent);border:none;border-radius:8px;padding:8px 16px;font-size:13px;font-weight:700;cursor:pointer}
+.profile-hero{background:linear-gradient(160deg,#1a1030 0%,#0d0d1a 60%);padding:20px 16px;display:flex;align-items:center;gap:14px}
+.avatar{width:60px;height:60px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:700;flex-shrink:0}
+.lp-bar{background:rgba(255,255,255,0.1);border-radius:4px;height:6px;overflow:hidden;margin-top:6px}
+.lp-fill{height:100%;background:linear-gradient(90deg,var(--accent),#a594ff);border-radius:4px}
+.info-list{background:var(--card);border:1px solid var(--border);border-radius:var(--r);margin:16px;overflow:hidden}
+.info-row{display:flex;align-items:center;padding:14px 16px;border-bottom:1px solid var(--border);gap:12px}
+.info-row:last-child{border-bottom:none}
+.info-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.info-label{font-size:13px;color:var(--text2);flex:1}
+.info-val{font-size:14px;font-weight:600}
+.history-list{padding:0 16px;display:flex;flex-direction:column;gap:8px}
+.hist-item{background:var(--card);border:1px solid var(--border);border-radius:var(--rs);padding:12px 14px;display:flex;align-items:center;gap:10px}
+.hist-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.hist-info{flex:1}
+.hist-title{font-size:13px;font-weight:600}
+.hist-date{font-size:11px;color:var(--text2);margin-top:2px}
+.hist-amt{font-size:14px;font-weight:700}
+.hist-amt.plus{color:var(--green)}
+.hist-amt.minus{color:var(--red)}
+.toast{position:fixed;top:20px;left:50%;transform:translateX(-50%) translateY(-80px);background:#1e1e2e;border:1px solid var(--border);color:white;padding:12px 20px;border-radius:30px;font-size:13px;font-weight:500;z-index:999;transition:transform 0.3s;white-space:nowrap}
+.toast.show{transform:translateX(-50%) translateY(0)}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:200;display:flex;align-items:flex-end;opacity:0;pointer-events:none;transition:opacity 0.3s}
+.modal-overlay.show{opacity:1;pointer-events:all}
+.modal{background:var(--bg2);border-radius:20px 20px 0 0;padding:20px 20px 40px;width:100%;transform:translateY(100%);transition:transform 0.3s}
+.modal-overlay.show .modal{transform:translateY(0)}
+.modal-handle{width:36px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 20px}
+.modal-title{font-size:18px;font-weight:700;margin-bottom:6px}
+.modal-sub{font-size:13px;color:var(--text2);margin-bottom:20px}
+.modal-detail{background:var(--bg3);border-radius:var(--rs);padding:14px;margin-bottom:16px;display:flex;flex-direction:column;gap:8px}
+.md-row{display:flex;justify-content:space-between;font-size:13px}
+.md-row .lbl{color:var(--text2)}
+.md-row .val{font-weight:600}
+.modal-btns{display:flex;gap:10px}
+.btn-cancel{flex:1;background:var(--bg3);border:1px solid var(--border);color:var(--text2);border-radius:var(--rs);padding:14px;font-size:15px;cursor:pointer}
+.btn-confirm{flex:2;background:var(--accent);border:none;color:white;border-radius:var(--rs);padding:14px;font-size:15px;font-weight:600;cursor:pointer}
 </style>
 </head>
 <body>
-
-<!-- HOME -->
 <div class="screen active" id="s-home">
-  <div class="home-hero">
-    <div class="hero-top">
-      <div>
-        <div class="hero-greeting">Xush kelibsiz,</div>
-        <div class="hero-name">Asilbek 👋</div>
-      </div>
-      <div class="level-badge">⭐ Level 2</div>
-    </div>
-    <div class="balance-block">
-      <div class="bal-label">Balans</div>
-      <div class="bal-amount" id="home-balance">145 000<span>so'm</span></div>
-      <div class="bal-sub">≈ 7 soat 15 daqiqa o'yin vaqti</div>
-    </div>
-  </div>
+<div class="home-hero">
+<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px">
+<div><div style="font-size:13px;color:var(--text2);margin-bottom:3px">Xush kelibsiz,</div><div style="font-size:20px;font-weight:600">Asilbek 👋</div></div>
+<div class="level-badge">⭐ Level 2</div></div>
+<div class="balance-block"><div class="bal-label">Balans</div>
+<div class="bal-amount" id="home-balance">145 000<span>so'm</span></div>
+<div class="bal-sub">≈ 7 soat 15 daqiqa o'yin vaqti</div></div></div>
+<div class="quick-grid">
+<div class="quick-card" id="q1"><div class="quick-icon purple"><svg fill="none" viewBox="0 0 24 24" stroke="rgba(124,111,255,0.9)" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div><div><div class="quick-title">Joy band qilish</div><div class="quick-sub">PC xaritasi</div></div></div>
+<div class="quick-card" id="q2"><div class="quick-icon green"><svg fill="none" viewBox="0 0 24 24" stroke="rgba(46,204,113,0.9)" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/><line x1="12" y1="12" x2="12" y2="16"/><line x1="10" y1="14" x2="14" y2="14"/></svg></div><div><div class="quick-title">Balans to'ldirish</div><div class="quick-sub">Click, Payme, Uzum</div></div></div>
+<div class="quick-card" id="q3"><div class="quick-icon gold"><svg fill="none" viewBox="0 0 24 24" stroke="rgba(245,200,66,0.9)" stroke-width="2"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/></svg></div><div><div class="quick-title">Bar va menyu</div><div class="quick-sub">Buyurtma berish</div></div></div>
+<div class="quick-card" id="q4"><div class="quick-icon red"><svg fill="none" viewBox="0 0 24 24" stroke="rgba(231,76,60,0.9)" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div><div><div class="quick-title">Profilim</div><div class="quick-sub">Tarix va darajalar</div></div></div></div>
+<div class="section"><div class="section-head">Statistika</div>
+<div class="stats-row">
+<div class="stat-card"><div class="stat-val">23</div><div class="stat-lbl">Sessiyalar</div></div>
+<div class="stat-card"><div class="stat-val" style="color:var(--gold)">57h</div><div class="stat-lbl">Jami vaqt</div></div>
+<div class="stat-card"><div class="stat-val" style="color:var(--green)">5%</div><div class="stat-lbl">Keshbek</div></div></div></div>
+<div class="section"><div class="section-head">Hozirgi sessiya</div>
+<div class="active-session"><div class="session-dot"></div>
+<div class="session-info"><div class="session-name">PC #7 — VIP zona</div><div class="session-time">Boshlangan: 15:30</div></div>
+<div class="session-timer" id="session-timer">00:45:12</div></div></div></div>
 
-  <div class="quick-grid">
-    <div class="quick-card" onclick="goTo('s-booking')">
-      <div class="quick-icon purple">
-        <svg fill="none" viewBox="0 0 24 24" stroke="rgba(124,111,255,0.9)" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-      </div>
-      <div>
-        <div class="quick-title">Joy band qilish</div>
-        <div class="quick-sub">PC xaritasi</div>
-      </div>
-    </div>
-    <div class="quick-card" onclick="goTo('s-topup')">
-      <div class="quick-icon green">
-        <svg fill="none" viewBox="0 0 24 24" stroke="rgba(46,204,113,0.9)" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/><line x1="12" y1="12" x2="12" y2="16"/><line x1="10" y1="14" x2="14" y2="14"/></svg>
-      </div>
-      <div>
-        <div class="quick-title">Balans to'ldirish</div>
-        <div class="quick-sub">Click, Payme, Uzum</div>
-      </div>
-    </div>
-    <div class="quick-card" onclick="goTo('s-bar')">
-      <div class="quick-icon gold">
-        <svg fill="none" viewBox="0 0 24 24" stroke="rgba(245,200,66,0.9)" stroke-width="2"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>
-      </div>
-      <div>
-        <div class="quick-title">Bar va menyu</div>
-        <div class="quick-sub">Buyurtma berish</div>
-      </div>
-    </div>
-    <div class="quick-card" onclick="goTo('s-profile')">
-      <div class="quick-icon red">
-        <svg fill="none" viewBox="0 0 24 24" stroke="rgba(231,76,60,0.9)" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-      </div>
-      <div>
-        <div class="quick-title">Profilim</div>
-        <div class="quick-sub">Tarix va darajalar</div>
-      </div>
-    </div>
-  </div>
-
-  <div class="section">
-    <div class="section-head">Statistika</div>
-    <div class="stats-row">
-      <div class="stat-card"><div class="stat-val">23</div><div class="stat-lbl">Sessiyalar</div></div>
-      <div class="stat-card"><div class="stat-val" style="color:var(--gold)">57h</div><div class="stat-lbl">Jami vaqt</div></div>
-      <div class="stat-card"><div class="stat-val" style="color:var(--green)">5%</div><div class="stat-lbl">Keshbek</div></div>
-    </div>
-  </div>
-
-  <div class="section">
-    <div class="section-head">Hozirgi sessiya</div>
-    <div class="active-session">
-      <div class="session-dot"></div>
-      <div class="session-info">
-        <div class="session-name">PC #7 — VIP zona</div>
-        <div class="session-time">Boshlangan: 15:30</div>
-      </div>
-      <div class="session-timer" id="session-timer">00:45:12</div>
-    </div>
-  </div>
-</div>
-
-<!-- BOOKING -->
 <div class="screen" id="s-booking">
-  <div class="map-header">
-    <div class="map-title">PC xaritasi</div>
-    <div class="map-sub">Bo'sh joyni tanlang</div>
-  </div>
-  <div class="legend">
-    <div class="leg-item"><div class="leg-dot" style="background:var(--green)"></div>Bo'sh</div>
-    <div class="leg-item"><div class="leg-dot" style="background:var(--yellow)"></div>Bron</div>
-    <div class="leg-item"><div class="leg-dot" style="background:var(--red)"></div>Band</div>
-  </div>
+<div class="map-header"><div class="map-title">PC xaritasi</div><div style="font-size:13px;color:var(--text2)">Bo'sh joyni tanlang</div></div>
+<div class="legend"><div class="leg-item"><div class="leg-dot" style="background:var(--green)"></div>Bo'sh</div><div class="leg-item"><div class="leg-dot" style="background:var(--yellow)"></div>Bron</div><div class="leg-item"><div class="leg-dot" style="background:var(--red)"></div>Band</div></div>
+<div class="zone-label">Main zona — 12 PC</div>
+<div class="pc-grid" id="main-grid"></div>
+<div class="zone-label">VIP zona — 6 PC</div>
+<div class="pc-grid" id="vip-grid"></div>
+<div class="booking-panel" id="booking-panel" style="display:none">
+<div style="font-size:14px;font-weight:600;margin-bottom:12px" id="bp-pc-name">PC tanlandi</div>
+<div style="font-size:12px;color:var(--text2);margin-bottom:10px">Vaqtni tanlang</div>
+<div class="time-grid" id="time-grid"></div>
+<div style="font-size:12px;color:var(--text2);margin-bottom:8px">Davomiyligi</div>
+<div class="dur-row">
+<div class="dur-chip sel" id="d1">1 soat</div>
+<div class="dur-chip" id="d2">2 soat</div>
+<div class="dur-chip" id="d3">3 soat</div>
+<div class="dur-chip" id="d4">4 soat</div></div>
+<div class="book-cost"><div style="color:var(--text2)">Jami narx</div><div class="cost-val" id="book-cost-val">20 000 so'm</div></div>
+<button class="btn-primary" id="book-btn">Band qilish</button></div></div>
 
-  <div class="zone-label">Main zona — 12 PC</div>
-  <div class="pc-grid" id="main-grid"></div>
-
-  <div class="zone-label">VIP zona — 6 PC</div>
-  <div class="pc-grid" id="vip-grid"></div>
-
-  <div class="booking-panel" id="booking-panel" style="display:none">
-    <div class="bp-title" id="bp-pc-name">PC #— tanlandi</div>
-    <div style="font-size:12px;color:var(--text2);margin-bottom:10px">Vaqtni tanlang</div>
-    <div class="time-grid" id="time-grid"></div>
-    <div style="font-size:12px;color:var(--text2);margin-bottom:8px">Davomiyligi</div>
-    <div class="dur-row" id="dur-row">
-      <div class="dur-chip sel" onclick="selDur(this,1)">1 soat</div>
-      <div class="dur-chip" onclick="selDur(this,2)">2 soat</div>
-      <div class="dur-chip" onclick="selDur(this,3)">3 soat</div>
-      <div class="dur-chip" onclick="selDur(this,4)">4 soat</div>
-    </div>
-    <div class="book-cost">
-      <div style="font-size:13px;color:var(--text2)">Jami narx</div>
-      <div class="cost-val" id="book-cost-val">20 000 so'm</div>
-    </div>
-    <button class="btn-primary" onclick="openBookModal()">Band qilish</button>
-  </div>
-</div>
-
-<!-- TOPUP -->
 <div class="screen" id="s-topup">
-  <div class="topup-hero">
-    <div class="topup-bal">Joriy balans</div>
-    <div class="topup-amount" id="topup-bal-display">145 000<span>so'm</span></div>
-    <div class="cashback-info">
-      <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
-      Level 2 — 5% keshbek aktiv
-    </div>
-  </div>
+<div class="topup-hero">
+<div style="font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:6px">Joriy balans</div>
+<div style="font-size:36px;font-weight:700" id="topup-bal-display">145 000<span style="font-size:16px;font-weight:400;color:var(--text2);margin-left:4px">so'm</span></div>
+<div style="font-size:12px;color:var(--green);margin-top:8px">Level 2 — 5% keshbek aktiv</div></div>
+<div style="padding:16px 16px 0;font-size:12px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:0.8px">Summa tanlang</div>
+<div class="amounts-grid">
+<div class="amt-card" id="a1"><div class="amt-price">10 000 so'm</div><div class="amt-time">≈ 30 daqiqa</div><div class="amt-cashback">+ 500 keshbek</div></div>
+<div class="amt-card sel" id="a2"><div class="amt-price">20 000 so'm</div><div class="amt-time">≈ 1 soat</div><div class="amt-cashback">+ 1 000 keshbek</div></div>
+<div class="amt-card" id="a3"><div class="amt-price">50 000 so'm</div><div class="amt-time">≈ 2.5 soat</div><div class="amt-cashback">+ 2 500 keshbek</div></div>
+<div class="amt-card" id="a4"><div class="amt-price">100 000 so'm</div><div class="amt-time">≈ 5 soat</div><div class="amt-cashback">+ 5 000 keshbek</div></div></div>
+<div style="padding:0 16px 10px;font-size:12px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:0.8px">To'lov usuli</div>
+<div style="padding:0 16px"><div class="pay-grid">
+<div class="pay-card sel" id="p1"><div class="pay-logo">💳</div><div class="pay-name">Click</div></div>
+<div class="pay-card" id="p2"><div class="pay-logo">🏦</div><div class="pay-name">Payme</div></div>
+<div class="pay-card" id="p3"><div class="pay-logo">🛒</div><div class="pay-name">Uzum</div></div></div></div>
+<div style="padding:16px"><button class="btn-primary" id="topup-btn">To'lash — <span id="pay-btn-amt">20 000 so'm</span></button></div></div>
 
-  <div class="section" style="padding-top:16px">
-    <div class="section-head">Summa tanlang</div>
-  </div>
-  <div class="amounts-grid">
-    <div class="amt-card" onclick="selAmt(this,10000)">
-      <div class="amt-price">10 000 so'm</div>
-      <div class="amt-time">≈ 30 daqiqa</div>
-      <div class="amt-cashback">+ 500 so'm keshbek</div>
-    </div>
-    <div class="amt-card sel" onclick="selAmt(this,20000)">
-      <div class="amt-price">20 000 so'm</div>
-      <div class="amt-time">≈ 1 soat</div>
-      <div class="amt-cashback">+ 1 000 so'm keshbek</div>
-    </div>
-    <div class="amt-card" onclick="selAmt(this,50000)">
-      <div class="amt-price">50 000 so'm</div>
-      <div class="amt-time">≈ 2.5 soat</div>
-      <div class="amt-cashback">+ 2 500 so'm keshbek</div>
-    </div>
-    <div class="amt-card" onclick="selAmt(this,100000)">
-      <div class="amt-price">100 000 so'm</div>
-      <div class="amt-time">≈ 5 soat</div>
-      <div class="amt-cashback">+ 5 000 so'm keshbek</div>
-    </div>
-  </div>
-
-  <div class="pay-methods">
-    <div class="pay-title">To'lov usuli</div>
-    <div class="pay-grid">
-      <div class="pay-card sel" onclick="selPay(this)">
-        <div class="pay-logo">💳</div>
-        <div class="pay-name">Click</div>
-      </div>
-      <div class="pay-card" onclick="selPay(this)">
-        <div class="pay-logo">🏦</div>
-        <div class="pay-name">Payme</div>
-      </div>
-      <div class="pay-card" onclick="selPay(this)">
-        <div class="pay-logo">🛒</div>
-        <div class="pay-name">Uzum</div>
-      </div>
-    </div>
-  </div>
-
-  <div class="pay-btn-wrap">
-    <button class="btn-primary" onclick="doTopup()">To'lash — <span id="pay-btn-amt">20 000 so'm</span></button>
-  </div>
-</div>
-
-<!-- BAR -->
 <div class="screen" id="s-bar">
-  <div style="padding:16px 16px 0">
-    <div style="font-size:18px;font-weight:700;margin-bottom:4px">Bar menyu</div>
-    <div style="font-size:13px;color:var(--text2)">Balansdan hisobdan chiqariladi</div>
-  </div>
-  <div class="bar-cats">
-    <div class="cat-chip sel" onclick="selCat(this,'all')">Hammasi</div>
-    <div class="cat-chip" onclick="selCat(this,'drinks')">Ichimliklar</div>
-    <div class="cat-chip" onclick="selCat(this,'food')">Ovqatlar</div>
-    <div class="cat-chip" onclick="selCat(this,'snacks')">Sneklar</div>
-  </div>
-  <div class="bar-items" id="bar-items"></div>
-  <div style="height:80px"></div>
-  <div class="cart-bar" id="cart-bar">
-    <div>
-      <div class="cart-count" id="cart-count">0 ta mahsulot</div>
-      <div class="cart-total" id="cart-total">0 so'm</div>
-    </div>
-    <button class="cart-btn" onclick="openCartModal()">Buyurtma</button>
-  </div>
-</div>
+<div style="padding:16px 16px 0"><div style="font-size:18px;font-weight:700;margin-bottom:4px">Bar menyu</div><div style="font-size:13px;color:var(--text2)">Balansdan hisobdan chiqariladi</div></div>
+<div class="bar-cats">
+<div class="cat-chip sel" id="cat-all">Hammasi</div>
+<div class="cat-chip" id="cat-drinks">Ichimliklar</div>
+<div class="cat-chip" id="cat-food">Ovqatlar</div>
+<div class="cat-chip" id="cat-snacks">Sneklar</div></div>
+<div class="bar-items" id="bar-items"></div>
+<div style="height:80px"></div>
+<div class="cart-bar" id="cart-bar">
+<div><div style="font-size:13px;color:rgba(255,255,255,0.8)" id="cart-count">0 ta</div><div style="font-size:16px;font-weight:700" id="cart-total">0 so'm</div></div>
+<button class="cart-btn" id="cart-btn">Buyurtma</button></div></div>
 
-<!-- PROFILE -->
 <div class="screen" id="s-profile">
-  <div class="profile-hero">
-    <div class="avatar">A</div>
-    <div style="flex:1">
-      <div class="profile-name">Asilbek Yusupov</div>
-      <div class="profile-id">ID: #MG-00142 · @asilbek_uz</div>
-      <div class="level-progress">
-        <div class="lp-top">
-          <span>⭐ Level 2 — Silver</span>
-          <span style="color:var(--accent)">4.2M / 7M so'm</span>
-        </div>
-        <div class="lp-bar"><div class="lp-fill" style="width:60%"></div></div>
-        <div style="font-size:10px;color:var(--text3);margin-top:4px">Level 3 ga 2.8M so'm qoldi • +7% keshbek</div>
-      </div>
-    </div>
-  </div>
+<div class="profile-hero">
+<div class="avatar">A</div>
+<div style="flex:1">
+<div style="font-size:18px;font-weight:700">Asilbek Yusupov</div>
+<div style="font-size:12px;color:var(--text2);margin-top:2px">ID: #MG-00142</div>
+<div style="margin-top:10px">
+<div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text2);margin-bottom:4px"><span>⭐ Level 2</span><span style="color:var(--accent)">4.2M / 7M</span></div>
+<div class="lp-bar"><div class="lp-fill" style="width:60%"></div></div></div></div></div>
+<div class="info-list">
+<div class="info-row"><div class="info-icon" style="background:rgba(124,111,255,0.15)"><svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="var(--accent)" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/></svg></div><div class="info-label">Balans</div><div class="info-val" style="color:var(--accent)" id="prof-balance">145 000 so'm</div></div>
+<div class="info-row"><div class="info-icon" style="background:rgba(46,204,113,0.15)"><svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="var(--green)" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div><div class="info-label">Sessiyalar</div><div class="info-val">23 ta</div></div>
+<div class="info-row"><div class="info-icon" style="background:rgba(245,200,66,0.15)"><svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="var(--gold)" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div><div class="info-label">Jami vaqt</div><div class="info-val">57 soat</div></div>
+<div class="info-row"><div class="info-icon" style="background:rgba(46,204,113,0.15)"><svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="var(--green)" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div><div class="info-label">Keshbek</div><div class="info-val" style="color:var(--green)">5%</div></div></div>
+<div style="padding:0 16px;margin-bottom:8px;font-size:12px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:0.8px">Tarix</div>
+<div class="history-list">
+<div class="hist-item"><div class="hist-icon" style="background:rgba(46,204,113,0.15)"><svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="var(--green)" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div><div class="hist-info"><div class="hist-title">Balans to'ldirildi</div><div class="hist-date">Bugun, 14:32</div></div><div class="hist-amt plus">+50 000</div></div>
+<div class="hist-item"><div class="hist-icon" style="background:rgba(124,111,255,0.15)"><svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="var(--accent)" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/></svg></div><div class="hist-info"><div class="hist-title">PC #7 — 2 soat</div><div class="hist-date">Kecha, 18:00</div></div><div class="hist-amt minus">−40 000</div></div>
+<div class="hist-item"><div class="hist-icon" style="background:rgba(245,200,66,0.15)"><svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="var(--gold)" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div><div class="hist-info"><div class="hist-title">Keshbek</div><div class="hist-date">Kecha, 20:05</div></div><div class="hist-amt plus">+2 000</div></div></div>
+<div style="height:16px"></div></div>
 
-  <div class="info-list">
-    <div class="info-row">
-      <div class="info-icon" style="background:rgba(124,111,255,0.15)">
-        <svg fill="none" viewBox="0 0 24 24" stroke="var(--accent)" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
-      </div>
-      <div class="info-label">Balans</div>
-      <div class="info-val" style="color:var(--accent)" id="prof-balance">145 000 so'm</div>
-    </div>
-    <div class="info-row">
-      <div class="info-icon" style="background:rgba(46,204,113,0.15)">
-        <svg fill="none" viewBox="0 0 24 24" stroke="var(--green)" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-      </div>
-      <div class="info-label">Jami sessiyalar</div>
-      <div class="info-val">23 ta</div>
-    </div>
-    <div class="info-row">
-      <div class="info-icon" style="background:rgba(245,200,66,0.15)">
-        <svg fill="none" viewBox="0 0 24 24" stroke="var(--gold)" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-      </div>
-      <div class="info-label">Jami vaqt</div>
-      <div class="info-val">57 soat</div>
-    </div>
-    <div class="info-row">
-      <div class="info-icon" style="background:rgba(231,76,60,0.15)">
-        <svg fill="none" viewBox="0 0 24 24" stroke="var(--red)" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-      </div>
-      <div class="info-label">Keshbek darajasi</div>
-      <div class="info-val" style="color:var(--green)">5%</div>
-    </div>
-    <div class="info-row">
-      <div class="info-icon" style="background:rgba(255,255,255,0.07)">
-        <svg fill="none" viewBox="0 0 24 24" stroke="var(--text2)" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-      </div>
-      <div class="info-label">A'zo bo'lgan</div>
-      <div class="info-val">Mar 2024</div>
-    </div>
-  </div>
-
-  <div class="section">
-    <div class="section-head">So'nggi operatsiyalar</div>
-  </div>
-  <div class="history-list">
-    <div class="hist-item">
-      <div class="hist-icon" style="background:rgba(46,204,113,0.15)"><svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="var(--green)" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div>
-      <div class="hist-info"><div class="hist-title">Balans to'ldirildi</div><div class="hist-date">Bugun, 14:32</div></div>
-      <div class="hist-amt plus">+50 000</div>
-    </div>
-    <div class="hist-item">
-      <div class="hist-icon" style="background:rgba(124,111,255,0.15)"><svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="var(--accent)" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg></div>
-      <div class="hist-info"><div class="hist-title">PC #7 sessiya — 2 soat</div><div class="hist-date">Kecha, 18:00</div></div>
-      <div class="hist-amt minus">−40 000</div>
-    </div>
-    <div class="hist-item">
-      <div class="hist-icon" style="background:rgba(245,200,66,0.15)"><svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="var(--gold)" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>
-      <div class="hist-info"><div class="hist-title">Keshbek yig'ildi</div><div class="hist-date">Kecha, 20:05</div></div>
-      <div class="hist-amt plus">+2 000</div>
-    </div>
-    <div class="hist-item">
-      <div class="hist-icon" style="background:rgba(231,76,60,0.15)"><svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="var(--red)" stroke-width="2"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/></svg></div>
-      <div class="hist-info"><div class="hist-title">Bar — Redbull + Burger</div><div class="hist-date">Dushanba, 21:30</div></div>
-      <div class="hist-amt minus">−18 000</div>
-    </div>
-    <div class="hist-item">
-      <div class="hist-icon" style="background:rgba(46,204,113,0.15)"><svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="var(--green)" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div>
-      <div class="hist-info"><div class="hist-title">Balans to'ldirildi</div><div class="hist-date">Dushanba, 16:00</div></div>
-      <div class="hist-amt plus">+100 000</div>
-    </div>
-  </div>
-  <div style="height:16px"></div>
-</div>
-
-<!-- BOTTOM NAV -->
 <nav class="bottom-nav">
-  <button class="nav-btn active" id="nav-home" onclick="goTo('s-home')">
-    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-    Bosh
-  </button>
-  <button class="nav-btn" id="nav-booking" onclick="goTo('s-booking')">
-    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-    Bron
-  </button>
-  <button class="nav-btn" id="nav-topup" onclick="goTo('s-topup')">
-    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/><line x1="12" y1="12" x2="12" y2="16"/><line x1="10" y1="14" x2="14" y2="14"/></svg>
-    To'ldirish
-  </button>
-  <button class="nav-btn" id="nav-bar" onclick="goTo('s-bar')">
-    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>
-    Bar
-  </button>
-  <button class="nav-btn" id="nav-profile" onclick="goTo('s-profile')">
-    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-    Profil
-  </button>
+<button class="nav-btn active" id="nav-home"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>Bosh</button>
+<button class="nav-btn" id="nav-booking"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Bron</button>
+<button class="nav-btn" id="nav-topup"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><line x1="12" y1="12" x2="12" y2="16"/><line x1="10" y1="14" x2="14" y2="14"/></svg>To'ldirish</button>
+<button class="nav-btn" id="nav-bar"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/></svg>Bar</button>
+<button class="nav-btn" id="nav-profile"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Profil</button>
 </nav>
-
-<!-- TOAST -->
 <div class="toast" id="toast"></div>
-
-<!-- BOOK MODAL -->
-<div class="modal-overlay" id="book-modal">
-  <div class="modal">
-    <div class="modal-handle"></div>
-    <div class="modal-title">Bron tasdiqlash</div>
-    <div class="modal-sub">Quyidagi ma'lumotlarni tekshiring</div>
-    <div class="modal-detail">
-      <div class="md-row"><span class="lbl">PC</span><span class="val" id="md-pc">—</span></div>
-      <div class="md-row"><span class="lbl">Vaqt</span><span class="val" id="md-time">—</span></div>
-      <div class="md-row"><span class="lbl">Davomiylik</span><span class="val" id="md-dur">—</span></div>
-      <div class="md-row"><span class="lbl">Narx</span><span class="val" style="color:var(--accent)" id="md-price">—</span></div>
-    </div>
-    <div class="modal-btns">
-      <button class="btn-cancel" onclick="closeModal('book-modal')">Bekor</button>
-      <button class="btn-confirm" onclick="confirmBook()">Tasdiqlash ✓</button>
-    </div>
-  </div>
-</div>
-
-<!-- CART MODAL -->
-<div class="modal-overlay" id="cart-modal">
-  <div class="modal">
-    <div class="modal-handle"></div>
-    <div class="modal-title">Buyurtma</div>
-    <div class="modal-sub" id="cart-modal-sub">PC #7 ga yetkaziladi</div>
-    <div class="modal-detail" id="cart-detail"></div>
-    <div class="modal-btns">
-      <button class="btn-cancel" onclick="closeModal('cart-modal')">Bekor</button>
-      <button class="btn-confirm" onclick="confirmCart()">Buyurtma berish</button>
-    </div>
-  </div>
-</div>
-
+<div class="modal-overlay" id="book-modal"><div class="modal"><div class="modal-handle"></div><div class="modal-title">Bron tasdiqlash</div><div class="modal-sub">Ma'lumotlarni tekshiring</div><div class="modal-detail"><div class="md-row"><span class="lbl">PC</span><span class="val" id="md-pc">—</span></div><div class="md-row"><span class="lbl">Vaqt</span><span class="val" id="md-time">—</span></div><div class="md-row"><span class="lbl">Davomiylik</span><span class="val" id="md-dur">—</span></div><div class="md-row"><span class="lbl">Narx</span><span class="val" style="color:var(--accent)" id="md-price">—</span></div></div><div class="modal-btns"><button class="btn-cancel" id="book-cancel">Bekor</button><button class="btn-confirm" id="book-confirm">Tasdiqlash ✓</button></div></div></div>
+<div class="modal-overlay" id="cart-modal"><div class="modal"><div class="modal-handle"></div><div class="modal-title">Buyurtma</div><div class="modal-sub">Balansingizdan hisoblanadi</div><div class="modal-detail" id="cart-detail"></div><div class="modal-btns"><button class="btn-cancel" id="cart-cancel">Bekor</button><button class="btn-confirm" id="cart-confirm">Buyurtma berish</button></div></div></div>
 <script>
-// State
-let balance = 145000;
-let selAmount = 20000;
-let selPC = null;
-let selTime = null;
-let selDuration = 1;
-let cart = {};
-const PRICE_PER_HOUR = 20000;
-const VIP_PRICE = 25000;
+var balance=145000,selAmount=20000,selPC=null,selTime=null,selDuration=1,cart={};
+var PRICE=20000,VIP_PRICE=25000;
+var mainPCs=[{id:1,s:'free'},{id:2,s:'busy'},{id:3,s:'free'},{id:4,s:'free'},{id:5,s:'booked'},{id:6,s:'free'},{id:7,s:'busy'},{id:8,s:'free'},{id:9,s:'free'},{id:10,s:'free'},{id:11,s:'booked'},{id:12,s:'free'}];
+var vipPCs=[{id:13,s:'free',vip:true},{id:14,s:'busy',vip:true},{id:15,s:'free',vip:true},{id:16,s:'free',vip:true},{id:17,s:'booked',vip:true},{id:18,s:'free',vip:true}];
+var barItems=[{id:1,cat:'drinks',emoji:'🧃',name:'Lipton Ice Tea',desc:'Shaftoli, 0.5L',price:8000},{id:2,cat:'drinks',emoji:'⚡',name:'Red Bull',desc:'Energetik, 0.25L',price:12000},{id:3,cat:'drinks',emoji:'☕',name:'Kapuchino',desc:'Issiq',price:10000},{id:4,cat:'drinks',emoji:'🧋',name:'Coca-Cola',desc:'Sovuq, 0.5L',price:7000},{id:5,cat:'food',emoji:'🍔',name:'Burger',desc:'Mol go\'shti',price:25000},{id:6,cat:'food',emoji:'🍕',name:'Pizza slice',desc:'Pepperoni',price:20000},{id:7,cat:'food',emoji:'🌭',name:'Hot-dog',desc:'Sosiska',price:15000},{id:8,cat:'snacks',emoji:'🍿',name:'Popcorn',desc:'Tuzli, katta',price:9000},{id:9,cat:'snacks',emoji:'🍫',name:'Snickers',desc:'Shokolad',price:6000},{id:10,cat:'snacks',emoji:'🥨',name:'Chips',desc:'Lay\'s, 50g',price:8000}];
+var currentCat='all';
 
-// PC data
-const mainPCs = [
-  {id:1,s:'free'},{id:2,s:'busy'},{id:3,s:'free'},{id:4,s:'free'},
-  {id:5,s:'booked'},{id:6,s:'free'},{id:7,s:'busy'},{id:8,s:'free'},
-  {id:9,s:'free'},{id:10,s:'free'},{id:11,s:'booked'},{id:12,s:'free'}
-];
-const vipPCs = [
-  {id:13,s:'free',vip:true},{id:14,s:'busy',vip:true},{id:15,s:'free',vip:true},
-  {id:16,s:'free',vip:true},{id:17,s:'booked',vip:true},{id:18,s:'free',vip:true}
-];
-const times = ['10:00','11:00','12:00','13:00','14:00','15:00','16:00','17:00','18:00','19:00','20:00','21:00'];
-
-// Bar items
-const barItems = [
-  {id:1,cat:'drinks',emoji:'🧃',name:'Lipton Ice Tea',desc:'Shaftoli, 0.5L',price:8000},
-  {id:2,cat:'drinks',emoji:'⚡',name:'Red Bull',desc:'Energetik, 0.25L',price:12000},
-  {id:3,cat:'drinks',emoji:'☕',name:'Kapuchino',desc:'Issiq, qo\'shimchali',price:10000},
-  {id:4,cat:'drinks',emoji:'🧋',name:'Coca-Cola',desc:'Sovuq, 0.5L',price:7000},
-  {id:5,cat:'food',emoji:'🍔',name:'Burger',desc:'Mol go\'shti, sabzavot',price:25000},
-  {id:6,cat:'food',emoji:'🍕',name:'Pizza slice',desc:'Pepperoni, 2 bo\'lak',price:20000},
-  {id:7,cat:'food',emoji:'🌭',name:'Hot-dog',desc:'Sosiska, sous',price:15000},
-  {id:8,cat:'snacks',emoji:'🍿',name:'Popcorn',desc:'Tuzli, katta',price:9000},
-  {id:9,cat:'snacks',emoji:'🍫',name:'Snickers',desc:'Shokolad bar',price:6000},
-  {id:10,cat:'snacks',emoji:'🥨',name:'Chips',desc:'Lay\'s, 50g',price:8000},
-];
-
-// Navigation
-function goTo(screenId) {
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.getElementById(screenId).classList.add('active');
-  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-  const navId = 'nav-' + screenId.replace('s-','');
-  const navEl = document.getElementById(navId);
-  if (navEl) navEl.classList.add('active');
+function goTo(id){
+  document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active')});
+  var t=document.getElementById(id);
+  if(t)t.classList.add('active');
+  document.querySelectorAll('.nav-btn').forEach(function(b){b.classList.remove('active')});
+  var n=document.getElementById('nav-'+id.replace('s-',''));
+  if(n)n.classList.add('active');
   window.scrollTo(0,0);
 }
 
-// Toast
-function showToast(msg, type='success') {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.className = 'toast ' + type + ' show';
-  setTimeout(() => t.className = 'toast', 2500);
+function showToast(msg){
+  var t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  setTimeout(function(){t.classList.remove('show')},2500);
 }
 
-// Modal
-function closeModal(id) {
-  document.getElementById(id).classList.remove('show');
-}
+function closeModal(id){document.getElementById(id).classList.remove('show')}
 
-// HOME timer
-let secs = 45*60+12;
-setInterval(() => {
+// Nav
+document.getElementById('nav-home').addEventListener('click',function(){goTo('s-home')});
+document.getElementById('nav-booking').addEventListener('click',function(){goTo('s-booking')});
+document.getElementById('nav-topup').addEventListener('click',function(){goTo('s-topup')});
+document.getElementById('nav-bar').addEventListener('click',function(){goTo('s-bar')});
+document.getElementById('nav-profile').addEventListener('click',function(){goTo('s-profile')});
+
+// Quick cards
+document.getElementById('q1').addEventListener('click',function(){goTo('s-booking')});
+document.getElementById('q2').addEventListener('click',function(){goTo('s-topup')});
+document.getElementById('q3').addEventListener('click',function(){goTo('s-bar')});
+document.getElementById('q4').addEventListener('click',function(){goTo('s-profile')});
+
+// Timer
+var secs=45*60+12;
+setInterval(function(){
   secs++;
-  const h = String(Math.floor(secs/3600)).padStart(2,'0');
-  const m = String(Math.floor((secs%3600)/60)).padStart(2,'0');
-  const s = String(secs%60).padStart(2,'0');
-  document.getElementById('session-timer').textContent = h+':'+m+':'+s;
+  var h=String(Math.floor(secs/3600)).padStart(2,'0');
+  var m=String(Math.floor((secs%3600)/60)).padStart(2,'0');
+  var s=String(secs%60).padStart(2,'0');
+  document.getElementById('session-timer').textContent=h+':'+m+':'+s;
 },1000);
 
-// PC MAP
-function buildPCGrid(pcs, gridId) {
-  const grid = document.getElementById(gridId);
-  grid.innerHTML = pcs.map(pc => `
-    <div class="pc-slot ${pc.s}${pc.vip?' vip':''}" id="pc-${pc.id}" onclick="selectPC(${pc.id},${pc.vip?true:false},'${pc.s}')">
-      <div class="pc-num">${pc.id}</div>
-      <div class="pc-status">${pc.s==='free'?'Bo\'sh':pc.s==='busy'?'Band':'Bron'}</div>
-    </div>
-  `).join('');
+// PC Grid
+function buildPCGrid(pcs,gridId){
+  var g=document.getElementById(gridId);
+  g.innerHTML=pcs.map(function(pc){
+    return '<div class="pc-slot '+pc.s+(pc.vip?' vip':'')+'" id="pc-'+pc.id+'" data-id="'+pc.id+'" data-vip="'+(pc.vip?1:0)+'" data-status="'+pc.s+'"><div class="pc-num">'+pc.id+'</div><div class="pc-status">'+(pc.s==='free'?"Bo'sh":pc.s==='busy'?'Band':'Bron')+'</div></div>';
+  }).join('');
+  g.querySelectorAll('.pc-slot').forEach(function(el){
+    el.addEventListener('click',function(){
+      var id=parseInt(this.getAttribute('data-id'));
+      var vip=this.getAttribute('data-vip')==='1';
+      var status=this.getAttribute('data-status');
+      selectPC(id,vip,status);
+    });
+  });
 }
-buildPCGrid(mainPCs, 'main-grid');
-buildPCGrid(vipPCs, 'vip-grid');
+buildPCGrid(mainPCs,'main-grid');
+buildPCGrid(vipPCs,'vip-grid');
 
-function buildTimes() {
-  const now = new Date().getHours();
-  document.getElementById('time-grid').innerHTML = times
-    .filter(t => parseInt(t) > now)
-    .slice(0,6)
-    .map((t,i) => `<div class="time-chip${i===0?' sel':''}" onclick="selTime(this,'${t}')">${t}</div>`)
-    .join('');
-  if (selTime === null && times.filter(t=>parseInt(t)>now).length > 0)
-    selTime = times.filter(t=>parseInt(t)>now)[0];
+function buildTimes(){
+  var now=new Date().getHours();
+  var times=['10:00','11:00','12:00','13:00','14:00','15:00','16:00','17:00','18:00','19:00','20:00','21:00'];
+  var avail=times.filter(function(t){return parseInt(t)>now}).slice(0,6);
+  if(avail.length===0)avail=['10:00','12:00','14:00','16:00','18:00','20:00'];
+  selTime=avail[0];
+  document.getElementById('time-grid').innerHTML=avail.map(function(t,i){
+    return '<div class="time-chip'+(i===0?' sel':'')+'" data-time="'+t+'">'+t+'</div>';
+  }).join('');
+  document.querySelectorAll('.time-chip').forEach(function(el){
+    el.addEventListener('click',function(){
+      document.querySelectorAll('.time-chip').forEach(function(c){c.classList.remove('sel')});
+      this.classList.add('sel');
+      selTime=this.getAttribute('data-time');
+      updateCost();
+    });
+  });
 }
 
-function selectPC(id, isVip, status) {
-  if (status !== 'free') return;
-  document.querySelectorAll('.pc-slot').forEach(el => el.classList.remove('selected'));
+function selectPC(id,isVip,status){
+  if(status!=='free')return;
+  document.querySelectorAll('.pc-slot').forEach(function(el){el.classList.remove('selected')});
   document.getElementById('pc-'+id).classList.add('selected');
-  selPC = {id, isVip};
-  buildTimes();
-  updateCost();
-  document.getElementById('booking-panel').style.display = 'block';
-  document.getElementById('bp-pc-name').textContent = `PC #${id}${isVip?' — VIP':''} tanlandi`;
-  document.getElementById('booking-panel').scrollIntoView({behavior:'smooth', block:'nearest'});
+  selPC={id:id,isVip:isVip};
+  buildTimes();updateCost();
+  document.getElementById('booking-panel').style.display='block';
+  document.getElementById('bp-pc-name').textContent='PC #'+id+(isVip?' — VIP':'')+' tanlandi';
 }
 
-function selTime(el, t) {
-  document.querySelectorAll('.time-chip').forEach(c => c.classList.remove('sel'));
-  el.classList.add('sel');
-  selTime = t;
-  updateCost();
+function updateCost(){
+  if(!selPC)return;
+  var price=(selPC.isVip?VIP_PRICE:PRICE)*selDuration;
+  document.getElementById('book-cost-val').textContent=price.toLocaleString('uz')+' so\'m';
 }
 
-function selDur(el, d) {
-  document.querySelectorAll('.dur-chip').forEach(c => c.classList.remove('sel'));
-  el.classList.add('sel');
-  selDuration = d;
-  updateCost();
-}
+['d1','d2','d3','d4'].forEach(function(id,i){
+  document.getElementById(id).addEventListener('click',function(){
+    document.querySelectorAll('.dur-chip').forEach(function(c){c.classList.remove('sel')});
+    this.classList.add('sel');
+    selDuration=i+1;updateCost();
+  });
+});
 
-function updateCost() {
-  if (!selPC) return;
-  const price = (selPC.isVip ? VIP_PRICE : PRICE_PER_HOUR) * selDuration;
-  document.getElementById('book-cost-val').textContent = price.toLocaleString('uz') + ' so\'m';
-}
-
-function openBookModal() {
-  if (!selPC || !selTime) { showToast('PC va vaqt tanlang', 'error'); return; }
-  const price = (selPC.isVip ? VIP_PRICE : PRICE_PER_HOUR) * selDuration;
-  if (balance < price) { showToast('Balans yetarli emas!', 'error'); return; }
-  document.getElementById('md-pc').textContent = `PC #${selPC.id}${selPC.isVip?' (VIP)':''}`;
-  document.getElementById('md-time').textContent = selTime;
-  document.getElementById('md-dur').textContent = selDuration + ' soat';
-  document.getElementById('md-price').textContent = price.toLocaleString('uz') + ' so\'m';
+document.getElementById('book-btn').addEventListener('click',function(){
+  if(!selPC||!selTime){showToast('PC va vaqt tanlang');return;}
+  var price=(selPC.isVip?VIP_PRICE:PRICE)*selDuration;
+  if(balance<price){showToast('Balans yetarli emas!');return;}
+  document.getElementById('md-pc').textContent='PC #'+selPC.id+(selPC.isVip?' (VIP)':'');
+  document.getElementById('md-time').textContent=selTime;
+  document.getElementById('md-dur').textContent=selDuration+' soat';
+  document.getElementById('md-price').textContent=price.toLocaleString('uz')+' so\'m';
   document.getElementById('book-modal').classList.add('show');
+});
+
+document.getElementById('book-cancel').addEventListener('click',function(){closeModal('book-modal')});
+document.getElementById('book-confirm').addEventListener('click',function(){
+  var price=(selPC.isVip?VIP_PRICE:PRICE)*selDuration;
+  balance-=price;updateAllBalances();closeModal('book-modal');
+  showToast('✓ PC #'+selPC.id+' band qilindi!');
+  var el=document.getElementById('pc-'+selPC.id);
+  if(el){el.className='pc-slot booked'+(selPC.isVip?' vip':'');el.querySelector('.pc-status').textContent='Bron';el.setAttribute('data-status','booked');}
+  document.getElementById('booking-panel').style.display='none';
+  selPC=null;
+});
+
+// Topup
+[{id:'a1',amt:10000},{id:'a2',amt:20000},{id:'a3',amt:50000},{id:'a4',amt:100000}].forEach(function(o){
+  document.getElementById(o.id).addEventListener('click',function(){
+    document.querySelectorAll('.amt-card').forEach(function(c){c.classList.remove('sel')});
+    this.classList.add('sel');selAmount=o.amt;
+    document.getElementById('pay-btn-amt').textContent=o.amt.toLocaleString('uz')+' so\'m';
+  });
+});
+['p1','p2','p3'].forEach(function(id){
+  document.getElementById(id).addEventListener('click',function(){
+    document.querySelectorAll('.pay-card').forEach(function(c){c.classList.remove('sel')});
+    this.classList.add('sel');
+  });
+});
+document.getElementById('topup-btn').addEventListener('click',function(){
+  var cb=Math.floor(selAmount*0.05);
+  balance+=selAmount+cb;updateAllBalances();
+  showToast('✓ '+selAmount.toLocaleString('uz')+' + '+cb.toLocaleString('uz')+' keshbek!');
+});
+
+function updateAllBalances(){
+  document.getElementById('home-balance').innerHTML=balance.toLocaleString('uz')+'<span>so\'m</span>';
+  document.getElementById('topup-bal-display').innerHTML=balance.toLocaleString('uz')+'<span style="font-size:16px;font-weight:400;color:var(--text2);margin-left:4px">so\'m</span>';
+  document.getElementById('prof-balance').textContent=balance.toLocaleString('uz')+' so\'m';
 }
 
-function confirmBook() {
-  const price = (selPC.isVip ? VIP_PRICE : PRICE_PER_HOUR) * selDuration;
-  balance -= price;
-  updateAllBalances();
-  closeModal('book-modal');
-  showToast(`✓ PC #${selPC.id} — ${selTime} ga band qilindi!`);
-  // Mark as booked
-  const el = document.getElementById('pc-'+selPC.id);
-  if (el) { el.className = `pc-slot booked${selPC.isVip?' vip':''}`; el.querySelector('.pc-status').textContent = 'Bron'; }
-  document.getElementById('booking-panel').style.display = 'none';
-  selPC = null;
-}
-
-// TOPUP
-function selAmt(el, amt) {
-  document.querySelectorAll('.amt-card').forEach(c => c.classList.remove('sel'));
-  el.classList.add('sel');
-  selAmount = amt;
-  document.getElementById('pay-btn-amt').textContent = amt.toLocaleString('uz') + ' so\'m';
-}
-
-function selPay(el) {
-  document.querySelectorAll('.pay-card').forEach(c => c.classList.remove('sel'));
-  el.classList.add('sel');
-}
-
-function doTopup() {
-  const cashback = Math.floor(selAmount * 0.05);
-  balance += selAmount + cashback;
-  updateAllBalances();
-  showToast(`✓ ${selAmount.toLocaleString('uz')} so'm + ${cashback.toLocaleString('uz')} keshbek!`);
-}
-
-function updateAllBalances() {
-  const fmt = n => n.toLocaleString('uz') + ' so\'m';
-  document.getElementById('home-balance').innerHTML = balance.toLocaleString('uz') + '<span>so\'m</span>';
-  document.getElementById('topup-bal-display').innerHTML = balance.toLocaleString('uz') + '<span>so\'m</span>';
-  document.getElementById('prof-balance').textContent = fmt(balance);
-}
-
-// BAR
-let currentCat = 'all';
-function renderBar() {
-  const items = currentCat === 'all' ? barItems : barItems.filter(i => i.cat === currentCat);
-  document.getElementById('bar-items').innerHTML = items.map(item => `
-    <div class="bar-item">
-      <div class="bar-emoji">${item.emoji}</div>
-      <div class="bar-info">
-        <div class="bar-name">${item.name}</div>
-        <div class="bar-desc">${item.desc}</div>
-        <div class="bar-price">${item.price.toLocaleString('uz')} so'm</div>
-      </div>
-      <button class="bar-add" onclick="addToCart(${item.id})">${cart[item.id]?cart[item.id]+'':'+'}</button>
-    </div>
-  `).join('');
+// Bar
+function renderBar(){
+  var items=currentCat==='all'?barItems:barItems.filter(function(i){return i.cat===currentCat});
+  document.getElementById('bar-items').innerHTML=items.map(function(item){
+    return '<div class="bar-item"><div class="bar-emoji">'+item.emoji+'</div><div class="bar-info"><div class="bar-name">'+item.name+'</div><div class="bar-desc">'+item.desc+'</div><div class="bar-price">'+item.price.toLocaleString('uz')+' so\'m</div></div><button class="bar-add" data-id="'+item.id+'">'+(cart[item.id]||'+')+'</button></div>';
+  }).join('');
+  document.querySelectorAll('.bar-add').forEach(function(btn){
+    btn.addEventListener('click',function(){
+      var id=parseInt(this.getAttribute('data-id'));
+      cart[id]=(cart[id]||0)+1;renderBar();updateCart();
+    });
+  });
 }
 renderBar();
 
-function selCat(el, cat) {
-  document.querySelectorAll('.cat-chip').forEach(c => c.classList.remove('sel'));
-  el.classList.add('sel');
-  currentCat = cat;
-  renderBar();
+['all','drinks','food','snacks'].forEach(function(cat){
+  document.getElementById('cat-'+cat).addEventListener('click',function(){
+    document.querySelectorAll('.cat-chip').forEach(function(c){c.classList.remove('sel')});
+    this.classList.add('sel');currentCat=cat;renderBar();
+  });
+});
+
+function updateCart(){
+  var total=0,count=0;
+  Object.keys(cart).forEach(function(id){
+    var item=barItems.find(function(i){return i.id==id});
+    if(item){total+=item.price*cart[id];count+=cart[id];}
+  });
+  document.getElementById('cart-count').textContent=count+' ta mahsulot';
+  document.getElementById('cart-total').textContent=total.toLocaleString('uz')+' so\'m';
+  document.getElementById('cart-bar').classList[count>0?'add':'remove']('show');
 }
 
-function addToCart(id) {
-  cart[id] = (cart[id] || 0) + 1;
-  renderBar();
-  updateCart();
-}
-
-function updateCart() {
-  const total = Object.entries(cart).reduce((s,[id,q]) => s + barItems.find(i=>i.id==id).price*q, 0);
-  const count = Object.values(cart).reduce((s,q) => s+q, 0);
-  document.getElementById('cart-count').textContent = count + ' ta mahsulot';
-  document.getElementById('cart-total').textContent = total.toLocaleString('uz') + ' so\'m';
-  const bar = document.getElementById('cart-bar');
-  count > 0 ? bar.classList.add('show') : bar.classList.remove('show');
-}
-
-function openCartModal() {
-  const items = Object.entries(cart).map(([id,q]) => {
-    const item = barItems.find(i=>i.id==id);
-    return `<div class="md-row"><span class="lbl">${item.emoji} ${item.name} ×${q}</span><span class="val">${(item.price*q).toLocaleString('uz')}</span></div>`;
+document.getElementById('cart-btn').addEventListener('click',function(){
+  var items=Object.keys(cart).map(function(id){
+    var item=barItems.find(function(i){return i.id==id});
+    return '<div class="md-row"><span class="lbl">'+item.emoji+' '+item.name+' ×'+cart[id]+'</span><span class="val">'+(item.price*cart[id]).toLocaleString('uz')+'</span></div>';
   }).join('');
-  const total = Object.entries(cart).reduce((s,[id,q]) => s + barItems.find(i=>i.id==id).price*q, 0);
-  document.getElementById('cart-detail').innerHTML = items + `<div class="md-row" style="border-top:1px solid rgba(255,255,255,0.07);padding-top:8px;margin-top:4px"><span class="lbl">Jami</span><span class="val" style="color:var(--accent)">${total.toLocaleString('uz')} so'm</span></div>`;
+  var total=Object.keys(cart).reduce(function(s,id){var item=barItems.find(function(i){return i.id==id});return s+(item?item.price*cart[id]:0);},0);
+  document.getElementById('cart-detail').innerHTML=items+'<div class="md-row" style="border-top:1px solid rgba(255,255,255,0.07);padding-top:8px;margin-top:4px"><span class="lbl">Jami</span><span class="val" style="color:var(--accent)">'+total.toLocaleString('uz')+' so\'m</span></div>';
   document.getElementById('cart-modal').classList.add('show');
-}
-
-function confirmCart() {
-  const total = Object.entries(cart).reduce((s,[id,q]) => s + barItems.find(i=>i.id==id).price*q, 0);
-  if (balance < total) { showToast('Balans yetarli emas!', 'error'); closeModal('cart-modal'); return; }
-  balance -= total;
-  updateAllBalances();
-  cart = {};
-  updateCart();
-  closeModal('cart-modal');
-  renderBar();
-  showToast('✓ Buyurtma qabul qilindi! Yetkazilmoqda...');
-}
+});
+document.getElementById('cart-cancel').addEventListener('click',function(){closeModal('cart-modal')});
+document.getElementById('cart-confirm').addEventListener('click',function(){
+  var total=Object.keys(cart).reduce(function(s,id){var item=barItems.find(function(i){return i.id==id});return s+(item?item.price*cart[id]:0);},0);
+  if(balance<total){showToast('Balans yetarli emas!');closeModal('cart-modal');return;}
+  balance-=total;updateAllBalances();cart={};updateCart();closeModal('cart-modal');renderBar();
+  showToast('✓ Buyurtma qabul qilindi!');
+});
 </script>
 </body>
 </html>
