@@ -87,8 +87,12 @@ function getLevelInfo(totalSpent) {
 bot.onText(/\/icafe/, async (msg) => {
   if (String(msg.chat.id) !== String(ADMIN_ID)) return;
   try {
-    const computers = await icafeGet('computers');
-    bot.sendMessage(msg.chat.id, '✅ iCafeCloud ulandi!\n\n' + JSON.stringify(computers).slice(0, 500));
+    const https = require('https');
+https.get(`https://${ICAFE_SERVER}/api/v1/computers?token=${ICAFE_KEY}`, (res) => {
+  let d = '';
+  res.on('data', c => d += c);
+  res.on('end', () => bot.sendMessage(msg.chat.id, 'Javob: ' + d.slice(0, 500)));
+}).on('error', e => bot.sendMessage(msg.chat.id, 'Xato: ' + e.message));
   } catch(e) {
     bot.sendMessage(msg.chat.id, '❌ Xato: ' + e.message);
   }
