@@ -84,6 +84,15 @@ function getLevelInfo(totalSpent) {
 }
 
 // ─── /start ───
+bot.onText(/\/icafe/, async (msg) => {
+  if (String(msg.chat.id) !== String(ADMIN_ID)) return;
+  try {
+    const computers = await icafeGet('computers');
+    bot.sendMessage(msg.chat.id, '✅ iCafeCloud ulandi!\n\n' + JSON.stringify(computers).slice(0, 500));
+  } catch(e) {
+    bot.sendMessage(msg.chat.id, '❌ Xato: ' + e.message);
+  }
+});
 bot.onText(/\/start/, (msg) => {
   const user = getUser(msg.from);
   const webAppUrl = `https://${process.env.RAILWAY_PUBLIC_DOMAIN}/app`;
