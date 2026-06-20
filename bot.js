@@ -3,6 +3,7 @@ const express = require('express');
 const fs = require('fs');
 const path = require('path');
 
+process.env.RAILWAY_PUBLIC_DOMAIN = 'meticulous-harmony-production-9c56.up.railway.app';
 const TOKEN = process.env.BOT_TOKEN;
 const ADMIN_ID = process.env.ADMIN_CHAT_ID;
 const PORT = process.env.PORT || 3000;
