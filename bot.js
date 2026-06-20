@@ -1,4 +1,28 @@
 const TelegramBot = require('node-telegram-bot-api');
+const ICAFE_KEY = process.env.ICAFE_API_KEY;
+const ICAFE_SERVER = process.env.ICAFE_SERVER;
+
+async function icafeGet(endpoint) {
+  const https = require('https');
+  return new Promise((resolve, reject) => {
+    const options = {
+      hostname: ICAFE_SERVER,
+      path: '/api/' + endpoint,
+      method: 'GET',
+      headers: {
+        'Authorization': 'Bearer ' + ICAFE_KEY,
+        'Content-Type': 'application/json'
+      }
+    };
+    const req = https.request(options, (res) => {
+      let data = '';
+      res.on('data', chunk => data += chunk);
+      res.on('end', () => resolve(JSON.parse(data)));
+    });
+    req.on('error', reject);
+    req.end();
+  });
+}
 const express = require('express');
 const fs = require('fs');
 const path = require('path');
