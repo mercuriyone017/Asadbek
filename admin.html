@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MIRAGE Admin Panel</title>
+<style>
+:root{--bg:#0a0a0f;--bg2:#111118;--bg3:#1a1a24;--card:#16161f;--border:rgba(255,255,255,0.07);--accent:#7C6FFF;--gold:#F5C842;--green:#2ECC71;--red:#E74C3C;--yellow:#F39C12;--text:#fff;--text2:rgba(255,255,255,0.55);--text3:rgba(255,255,255,0.3);--r:12px;--rs:8px}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,'SF Pro Display','Segoe UI',sans-serif;display:flex;min-height:100vh}
+/* SIDEBAR */
+.sidebar{width:220px;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:100}
+.logo{padding:20px 16px;border-bottom:1px solid var(--border)}
+.logo-title{font-size:16px;font-weight:700;letter-spacing:-0.3px}
+.logo-sub{font-size:11px;color:var(--text3);margin-top:2px}
+.nav{padding:12px 8px;flex:1;overflow-y:auto}
+.nav-item{display:flex;align-items:center;gap:10px;padding:10px 10px;border-radius:var(--rs);cursor:pointer;font-size:13px;color:var(--text2);margin-bottom:2px;border:none;background:none;width:100%;text-align:left;transition:all 0.15s}
+.nav-item:hover{background:var(--bg3);color:var(--text)}
+.nav-item.active{background:rgba(124,111,255,0.12);color:var(--accent)}
+.nav-item svg{width:16px;height:16px;flex-shrink:0}
+.nav-section{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;padding:12px 10px 6px}
+.sidebar-footer{padding:12px 8px;border-top:1px solid var(--border)}
+.admin-badge{display:flex;align-items:center;gap:8px;padding:10px;background:var(--bg3);border-radius:var(--rs)}
+.admin-dot{width:8px;height:8px;border-radius:50%;background:var(--green)}
+.admin-name{font-size:12px;font-weight:500}
+.admin-role{font-size:10px;color:var(--text3)}
+/* MAIN */
+.main{margin-left:220px;flex:1;padding:24px;overflow-y:auto}
+.page{display:none}
+.page.active{display:block}
+.page-header{margin-bottom:24px}
+.page-title{font-size:22px;font-weight:700;letter-spacing:-0.5px}
+.page-sub{font-size:13px;color:var(--text2);margin-top:4px}
+/* CARDS */
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:16px}
+.stat-label{font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:8px}
+.stat-value{font-size:28px;font-weight:700;letter-spacing:-1px}
+.stat-change{font-size:11px;margin-top:4px}
+.stat-change.up{color:var(--green)}
+.stat-change.down{color:var(--red)}
+/* TABLE */
+.table-wrap{background:var(--card);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:20px}
+.table-head{display:flex;justify-content:space-between;align-items:center;padding:16px 20px;border-bottom:1px solid var(--border)}
+.table-title{font-size:14px;font-weight:600}
+.search-box{background:var(--bg3);border:1px solid var(--border);border-radius:var(--rs);padding:7px 12px;color:var(--text);font-size:13px;width:200px;outline:none}
+.search-box::placeholder{color:var(--text3)}
+table{width:100%;border-collapse:collapse}
+th{text-align:left;padding:10px 20px;font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:0.8px;font-weight:500;border-bottom:1px solid var(--border)}
+td{padding:12px 20px;font-size:13px;border-bottom:1px solid rgba(255,255,255,0.04)}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:rgba(255,255,255,0.02)}
+.badge{display:inline-flex;align-items:center;padding:3px 8px;border-radius:20px;font-size:11px;font-weight:500}
+.badge.green{background:rgba(46,204,113,0.1);color:var(--green)}
+.badge.red{background:rgba(231,76,60,0.1);color:var(--red)}
+.badge.yellow{background:rgba(243,156,18,0.1);color:var(--yellow)}
+.badge.purple{background:rgba(124,111,255,0.1);color:var(--accent)}
+.badge.gold{background:rgba(245,200,66,0.1);color:var(--gold)}
+/* BUTTONS */
+.btn{border:none;border-radius:var(--rs);padding:7px 14px;font-size:12px;font-weight:500;cursor:pointer;transition:opacity 0.15s}
+.btn:hover{opacity:0.85}
+.btn-primary{background:var(--accent);color:white}
+.btn-success{background:var(--green);color:white}
+.btn-danger{background:var(--red);color:white}
+.btn-ghost{background:var(--bg3);color:var(--text2);border:1px solid var(--border)}
+.btn-sm{padding:5px 10px;font-size:11px}
+/* PC MAP */
+.pc-map{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-bottom:20px}
+.pc-card{background:var(--card);border:1.5px solid var(--border);border-radius:var(--r);padding:14px 10px;text-align:center;cursor:pointer;transition:all 0.15s}
+.pc-card.free{border-color:rgba(46,204,113,0.3)}
+.pc-card.busy{border-color:rgba(231,76,60,0.3);background:rgba(231,76,60,0.05)}
+.pc-card.booked{border-color:rgba(243,156,18,0.3);background:rgba(243,156,18,0.05)}
+.pc-card:hover{transform:scale(1.03)}
+.pc-num{font-size:18px;font-weight:700}
+.pc-status-txt{font-size:10px;margin-top:4px}
+.pc-card.free .pc-status-txt{color:var(--green)}
+.pc-card.busy .pc-status-txt{color:var(--red)}
+.pc-card.booked .pc-status-txt{color:var(--yellow)}
+.pc-user{font-size:10px;color:var(--text3);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pc-timer{font-size:11px;font-weight:600;color:var(--accent);margin-top:3px}
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:200;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity 0.2s}
+.modal-overlay.show{opacity:1;pointer-events:all}
+.modal{background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:24px;width:420px;max-width:90vw}
+.modal-title{font-size:18px;font-weight:700;margin-bottom:16px}
+.form-group{margin-bottom:14px}
+.form-label{font-size:12px;color:var(--text2);margin-bottom:6px;display:block;text-transform:uppercase;letter-spacing:0.5px}
+.form-input{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:var(--rs);padding:10px 12px;color:var(--text);font-size:13px;outline:none}
+.form-input:focus{border-color:var(--accent)}
+.form-row{display:flex;gap:10px}
+.modal-btns{display:flex;gap:10px;margin-top:20px}
+/* CHARTS */
+.chart-wrap{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:20px;margin-bottom:20px}
+.chart-title{font-size:14px;font-weight:600;margin-bottom:16px}
+.bar-chart{display:flex;align-items:flex-end;gap:8px;height:120px}
+.bar-col{display:flex;flex-direction:column;align-items:center;gap:4px;flex:1}
+.bar-fill{width:100%;background:var(--accent);border-radius:4px 4px 0 0;opacity:0.8;transition:height 0.5s;min-height:4px}
+.bar-lbl{font-size:10px;color:var(--text3)}
+.bar-val{font-size:10px;color:var(--text2)}
+/* TOAST */
+.toast{position:fixed;top:20px;right:20px;background:var(--bg2);border:1px solid var(--border);color:var(--text);padding:12px 20px;border-radius:30px;font-size:13px;font-weight:500;z-index:999;transform:translateY(-80px);opacity:0;transition:all 0.3s}
+.toast.show{transform:translateY(0);opacity:1}
+/* TWO COL */
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px}
+.recent-list{display:flex;flex-direction:column;gap:8px}
+.recent-item{display:flex;align-items:center;gap:12px;background:var(--bg3);border-radius:var(--rs);padding:10px 12px}
+.recent-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:14px}
+.recent-info{flex:1}
+.recent-title{font-size:13px;font-weight:500}
+.recent-sub{font-size:11px;color:var(--text3);margin-top:1px}
+.recent-amt{font-size:13px;font-weight:600}
+.plus{color:var(--green)}
+.minus{color:var(--red)}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="logo">
+    <div class="logo-title">🎮 MIRAGE</div>
+    <div class="logo-sub">Admin Panel</div>
+  </div>
+  <nav class="nav">
+    <div class="nav-section">Asosiy</div>
+    <button class="nav-item active" data-page="dashboard">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+      Dashboard
+    </button>
+    <button class="nav-item" data-page="clients">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      Mijozlar
+    </button>
+    <button class="nav-item" data-page="bookings">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      Bronlar
+    </button>
+    <button class="nav-item" data-page="pcmap">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+      PC Xaritasi
+    </button>
+    <div class="nav-section">Moliya</div>
+    <button class="nav-item" data-page="finance">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+      Moliya
+    </button>
+    <button class="nav-item" data-page="orders">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/></svg>
+      Bar buyurtmalar
+    </button>
+    <div class="nav-section">Hisobot</div>
+    <button class="nav-item" data-page="reports">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+      Otchotlar
+    </button>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="admin-badge">
+      <div class="admin-dot"></div>
+      <div>
+        <div class="admin-name">Admin</div>
+        <div class="admin-role">MIRAGE Game Club</div>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+
+  <!-- DASHBOARD -->
+  <div class="page active" id="page-dashboard">
+    <div class="page-header">
+      <div class="page-title">Dashboard</div>
+      <div class="page-sub" id="today-date"></div>
+    </div>
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-label">Jami mijozlar</div>
+        <div class="stat-value" style="color:var(--accent)">47</div>
+        <div class="stat-change up">↑ +3 bu hafta</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Bugungi daromad</div>
+        <div class="stat-value" style="color:var(--green)">840K</div>
+        <div class="stat-change up">↑ +12% kecha</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Faol sessiyalar</div>
+        <div class="stat-value" style="color:var(--gold)">8</div>
+        <div class="stat-change">18 ta PC dan</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Kutilayotgan bron</div>
+        <div class="stat-value" style="color:var(--red)" id="pending-count">3</div>
+        <div class="stat-change down">Tasdiqlash kerak</div>
+      </div>
+    </div>
+
+    <div class="two-col">
+      <div class="chart-wrap">
+        <div class="chart-title">Haftalik daromad (so'm)</div>
+        <div class="bar-chart" id="week-chart"></div>
+      </div>
+      <div class="chart-wrap">
+        <div class="chart-title">So'nggi operatsiyalar</div>
+        <div class="recent-list" id="recent-ops"></div>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <div class="table-head">
+        <div class="table-title">Bugungi bronlar</div>
+        <button class="btn btn-primary btn-sm" onclick="goPage('bookings')">Barchasi →</button>
+      </div>
+      <table>
+        <thead><tr><th>Mijoz</th><th>PC</th><th>Vaqt</th><th>Davomiylik</th><th>Narx</th><th>Status</th><th>Amal</th></tr></thead>
+        <tbody id="today-bookings"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- CLIENTS -->
+  <div class="page" id="page-clients">
+    <div class="page-header" style="display:flex;justify-content:space-between;align-items:flex-start">
+      <div>
+        <div class="page-title">Mijozlar</div>
+        <div class="page-sub">Barcha ro'yxatdan o'tgan mijozlar</div>
+      </div>
+      <button class="btn btn-primary" onclick="openAddClient()">+ Yangi mijoz</button>
+    </div>
+    <div class="table-wrap">
+      <div class="table-head">
+        <div class="table-title">Mijozlar ro'yxati</div>
+        <input class="search-box" placeholder="Qidirish..." id="client-search" oninput="filterClients()">
+      </div>
+      <table>
+        <thead><tr><th>Ism</th><th>Telefon</th><th>Balans</th><th>Daraja</th><th>Sessiyalar</th><th>So'nggi faollik</th><th>Amal</th></tr></thead>
+        <tbody id="clients-table"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- BOOKINGS -->
+  <div class="page" id="page-bookings">
+    <div class="page-header">
+      <div class="page-title">Bronlar</div>
+      <div class="page-sub">Barcha bron so'rovlari</div>
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:16px">
+      <button class="btn btn-ghost btn-sm active-filter" data-filter="all" onclick="filterBookings('all')">Barchasi</button>
+      <button class="btn btn-ghost btn-sm" data-filter="pending" onclick="filterBookings('pending')">Kutilmoqda</button>
+      <button class="btn btn-ghost btn-sm" data-filter="confirmed" onclick="filterBookings('confirmed')">Tasdiqlangan</button>
+      <button class="btn btn-ghost btn-sm" data-filter="cancelled" onclick="filterBookings('cancelled')">Bekor</button>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Mijoz</th><th>PC</th><th>Sana/Vaqt</th><th>Davomiylik</th><th>Narx</th><th>Status</th><th>Amal</th></tr></thead>
+        <tbody id="bookings-table"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- PC MAP -->
+  <div class="page" id="page-pcmap">
+    <div class="page-header" style="display:flex;justify-content:space-between;align-items:flex-start">
+      <div>
+        <div class="page-title">PC Xaritasi</div>
+        <div class="page-sub">Real vaqtda holat</div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <span style="display:flex;align-items:center;gap:5px;font-size:12px;color:var(--text2)"><span style="width:10px;height:10px;border-radius:50%;background:var(--green);display:inline-block"></span>Bo'sh</span>
+        <span style="display:flex;align-items:center;gap:5px;font-size:12px;color:var(--text2)"><span style="width:10px;height:10px;border-radius:50%;background:var(--yellow);display:inline-block"></span>Bron</span>
+        <span style="display:flex;align-items:center;gap:5px;font-size:12px;color:var(--text2)"><span style="width:10px;height:10px;border-radius:50%;background:var(--red);display:inline-block"></span>Band</span>
+      </div>
+    </div>
+    <div style="font-size:12px;color:var(--text2);margin-bottom:10px;text-transform:uppercase;letter-spacing:1px">Main Zona</div>
+    <div class="pc-map" id="admin-main-pcs"></div>
+    <div style="font-size:12px;color:var(--gold);margin-bottom:10px;text-transform:uppercase;letter-spacing:1px">⭐ VIP Zona</div>
+    <div class="pc-map" style="grid-template-columns:repeat(6,1fr)" id="admin-vip-pcs"></div>
+  </div>
+
+  <!-- FINANCE -->
+  <div class="page" id="page-finance">
+    <div class="page-header">
+      <div class="page-title">Moliya</div>
+      <div class="page-sub">Balanslar va tranzaksiyalar</div>
+    </div>
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-label">Umumiy balanslar</div>
+        <div class="stat-value" style="color:var(--accent)">4.2M</div>
+        <div class="stat-change up">Tizimda</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Bugungi to'lovlar</div>
+        <div class="stat-value" style="color:var(--green)">1.2M</div>
+        <div class="stat-change up">↑ 8 ta to'lov</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Oylik daromad</div>
+        <div class="stat-value" style="color:var(--gold)">18.4M</div>
+        <div class="stat-change up">↑ +23% o'tgan oy</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Keshbek berildi</div>
+        <div class="stat-value" style="color:var(--red)">920K</div>
+        <div class="stat-change">Bu oy</div>
+      </div>
+    </div>
+    <div class="table-wrap">
+      <div class="table-head">
+        <div class="table-title">Tranzaksiyalar</div>
+        <button class="btn btn-primary btn-sm" onclick="openTopup()">+ Balans qo'shish</button>
+      </div>
+      <table>
+        <thead><tr><th>Mijoz</th><th>Tur</th><th>Summa</th><th>Usul</th><th>Vaqt</th><th>Status</th></tr></thead>
+        <tbody id="finance-table"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ORDERS -->
+  <div class="page" id="page-orders">
+    <div class="page-header">
+      <div class="page-title">Bar buyurtmalar</div>
+      <div class="page-sub">Mijozlarning buyurtmalari</div>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Mijoz</th><th>Mahsulotlar</th><th>Jami</th><th>Vaqt</th><th>Status</th><th>Amal</th></tr></thead>
+        <tbody id="orders-table"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- REPORTS -->
+  <div class="page" id="page-reports">
+    <div class="page-header">
+      <div class="page-title">Otchotlar</div>
+      <div class="page-sub">Kunlik, haftalik, oylik hisobotlar</div>
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:20px">
+      <button class="btn btn-primary btn-sm">Kunlik</button>
+      <button class="btn btn-ghost btn-sm">Haftalik</button>
+      <button class="btn btn-ghost btn-sm">Oylik</button>
+    </div>
+    <div class="two-col">
+      <div class="chart-wrap">
+        <div class="chart-title">Kunlik daromad (so'm)</div>
+        <div class="bar-chart" id="daily-chart"></div>
+      </div>
+      <div class="chart-wrap">
+        <div class="chart-title">Eng faol mijozlar</div>
+        <div id="top-clients"></div>
+      </div>
+    </div>
+    <div class="table-wrap">
+      <div class="table-head">
+        <div class="table-title">Kunlik hisobot</div>
+        <button class="btn btn-ghost btn-sm">📥 Yuklab olish</button>
+      </div>
+      <table>
+        <thead><tr><th>Ko'rsatkich</th><th>Bugun</th><th>Kecha</th><th>O'zgarish</th></tr></thead>
+        <tbody>
+          <tr><td>Jami daromad</td><td style="color:var(--green)">840,000 so'm</td><td>750,000 so'm</td><td class="plus">↑ +12%</td></tr>
+          <tr><td>Sessiyalar soni</td><td>23</td><td>19</td><td class="plus">↑ +21%</td></tr>
+          <tr><td>Yangi mijozlar</td><td>2</td><td>1</td><td class="plus">↑ +100%</td></tr>
+          <tr><td>Bar daromadi</td><td style="color:var(--green)">180,000 so'm</td><td>140,000 so'm</td><td class="plus">↑ +29%</td></tr>
+          <tr><td>O'rtacha sessiya</td><td>2.1 soat</td><td>1.8 soat</td><td class="plus">↑ +17%</td></tr>
+          <tr><td>Bekor qilingan bronlar</td><td>1</td><td>2</td><td class="plus">↓ −50%</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</main>
+
+<!-- MODALS -->
+<div class="modal-overlay" id="add-client-modal">
+  <div class="modal">
+    <div class="modal-title">Yangi mijoz qo'shish</div>
+    <div class="form-group"><label class="form-label">Ism familiya</label><input class="form-input" id="new-name" placeholder="Asilbek Yusupov"></div>
+    <div class="form-row">
+      <div class="form-group" style="flex:1"><label class="form-label">Telefon</label><input class="form-input" id="new-phone" placeholder="+998 90 123 45 67"></div>
+      <div class="form-group" style="flex:1"><label class="form-label">Boshlang'ich balans</label><input class="form-input" id="new-balance" placeholder="0" type="number"></div>
+    </div>
+    <div class="modal-btns">
+      <button class="btn btn-ghost" onclick="closeModal('add-client-modal')">Bekor</button>
+      <button class="btn btn-primary" onclick="addClient()">Qo'shish</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="topup-modal">
+  <div class="modal">
+    <div class="modal-title">Balans qo'shish</div>
+    <div class="form-group"><label class="form-label">Mijoz</label>
+      <select class="form-input" id="topup-client"></select></div>
+    <div class="form-group"><label class="form-label">Summa (so'm)</label><input class="form-input" id="topup-amount" placeholder="50000" type="number"></div>
+    <div class="form-group"><label class="form-label">Izoh</label><input class="form-input" id="topup-note" placeholder="Naqd pul"></div>
+    <div class="modal-btns">
+      <button class="btn btn-ghost" onclick="closeModal('topup-modal')">Bekor</button>
+      <button class="btn btn-success" onclick="doTopup()">Qo'shish ✓</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="pc-modal">
+  <div class="modal">
+    <div class="modal-title" id="pc-modal-title">PC #1</div>
+    <div id="pc-modal-body"></div>
+    <div class="modal-btns" id="pc-modal-btns"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── DATA ──
+var clients = [
+  {id:1,name:'Asilbek Yusupov',phone:'+998 90 123 45 67',balance:145000,level:2,sessions:23,lastActive:'Bugun, 15:30',totalSpent:4200000},
+  {id:2,name:'Jasur Toshmatov',phone:'+998 91 234 56 78',balance:82000,level:1,sessions:8,lastActive:'Bugun, 14:00',totalSpent:980000},
+  {id:3,name:'Dilnoza Karimova',phone:'+998 93 345 67 89',balance:210000,level:3,sessions:41,lastActive:'Kecha, 20:15',totalSpent:8700000},
+  {id:4,name:'Bobur Rahimov',phone:'+998 94 456 78 90',balance:35000,level:1,sessions:5,lastActive:'2 kun oldin',totalSpent:420000},
+  {id:5,name:'Zulfiya Nazarova',phone:'+998 95 567 89 01',balance:320000,level:4,sessions:78,lastActive:'Bugun, 16:00',totalSpent:18200000},
+  {id:6,name:'Sardor Mirzaev',phone:'+998 90 678 90 12',balance:58000,level:1,sessions:12,lastActive:'Bugun, 13:30',totalSpent:1100000},
+  {id:7,name:'Kamola Umarova',phone:'+998 91 789 01 23',balance:95000,level:2,sessions:19,lastActive:'Kecha, 18:00',totalSpent:3500000},
+];
+
+var bookings = [
+  {id:1,client:'Asilbek Yusupov',pc:'PC #7 (VIP)',time:'Bugun, 10:00',dur:'2 soat',price:50000,status:'confirmed'},
+  {id:2,client:'Jasur Toshmatov',pc:'PC #3',time:'Bugun, 12:00',dur:'1 soat',price:20000,status:'pending'},
+  {id:3,client:'Dilnoza Karimova',pc:'PC #12 (VIP)',time:'Bugun, 14:00',dur:'3 soat',price:75000,status:'confirmed'},
+  {id:4,client:'Sardor Mirzaev',pc:'PC #5',time:'Bugun, 16:00',dur:'2 soat',price:40000,status:'pending'},
+  {id:5,client:'Kamola Umarova',pc:'PC #9',time:'Kecha, 18:00',dur:'1 soat',price:20000,status:'cancelled'},
+  {id:6,client:'Bobur Rahimov',pc:'PC #2',time:'Kecha, 20:00',dur:'2 soat',price:40000,status:'confirmed'},
+];
+
+var transactions = [
+  {client:'Asilbek Yusupov',type:'To\'ldirish',amount:50000,method:'Click',time:'Bugun, 14:32',status:'success'},
+  {client:'Dilnoza Karimova',type:'Sessiya',amount:-75000,method:'Balans',time:'Bugun, 14:00',status:'success'},
+  {client:'Zulfiya Nazarova',type:'To\'ldirish',amount:100000,method:'Payme',time:'Bugun, 13:15',status:'success'},
+  {client:'Jasur Toshmatov',type:'Bar',amount:-18000,method:'Balans',time:'Bugun, 12:45',status:'success'},
+  {client:'Sardor Mirzaev',type:'To\'ldirish',amount:50000,method:'Uzum',time:'Bugun, 11:00',status:'success'},
+  {client:'Kamola Umarova',type:'Keshbek',amount:4750,method:'Avtomatik',time:'Kecha, 20:05',status:'success'},
+];
+
+var orders = [
+  {client:'Asilbek Yusupov',items:'⚡ Red Bull ×2, 🍔 Burger ×1',total:49000,time:'Bugun, 15:45',status:'delivered'},
+  {client:'Jasur Toshmatov',items:'🧃 Lipton ×1, 🍿 Popcorn ×1',total:17000,time:'Bugun, 14:20',status:'new'},
+  {client:'Sardor Mirzaev',items:'☕ Kapuchino ×2',total:20000,time:'Bugun, 13:30',status:'preparing'},
+  {client:'Dilnoza Karimova',items:'🍕 Pizza slice ×2, 🧋 Cola ×1',total:47000,time:'Kecha, 20:30',status:'delivered'},
+];
+
+var pcs = [
+  {id:1,status:'busy',user:'Sardor M.',timer:'01:23'},
+  {id:2,status:'free'},{id:3,status:'booked',user:'Jasur T.',time:'12:00'},
+  {id:4,status:'busy',user:'Kamola U.',timer:'00:45'},
+  {id:5,status:'free'},{id:6,status:'free'},
+  {id:7,status:'busy',user:'Asilbek Y.',timer:'00:38'},
+  {id:8,status:'free'},{id:9,status:'free'},
+  {id:10,status:'booked',user:'Sardor M.',time:'16:00'},
+  {id:11,status:'free'},{id:12,status:'busy',user:'Zulfiya N.',timer:'02:10'},
+];
+var vipPCs=[
+  {id:13,status:'free'},{id:14,status:'busy',user:'Dilnoza K.',timer:'01:55'},
+  {id:15,status:'free'},{id:16,status:'booked',user:'Kamola U.',time:'17:00'},
+  {id:17,status:'free'},{id:18,status:'busy',user:'Bobur R.',timer:'00:22'},
+];
+
+// ── NAVIGATION ──
+document.querySelectorAll('.nav-item').forEach(function(btn){
+  btn.addEventListener('click',function(){
+    var page=this.getAttribute('data-page');
+    goPage(page);
+  });
+});
+
+function goPage(page){
+  document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active')});
+  document.querySelectorAll('.nav-item').forEach(function(n){n.classList.remove('active')});
+  document.getElementById('page-'+page).classList.add('active');
+  document.querySelector('[data-page="'+page+'"]').classList.add('active');
+  if(page==='pcmap')renderPCMap();
+  if(page==='reports')renderReports();
+}
+
+// ── TOAST ──
+function showToast(msg){
+  var t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  setTimeout(function(){t.classList.remove('show')},2500);
+}
+function closeModal(id){document.getElementById(id).classList.remove('show')}
+
+// ── DASHBOARD ──
+document.getElementById('today-date').textContent=new Date().toLocaleDateString('uz-UZ',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+
+var weekData=[420,680,540,890,750,1100,840];
+var weekDays=['Du','Se','Ch','Pa','Sh','Ya','Bu'];
+var maxVal=Math.max.apply(null,weekData);
+document.getElementById('week-chart').innerHTML=weekData.map(function(v,i){
+  return '<div class="bar-col"><div class="bar-val">'+(v)+'K</div><div class="bar-fill" style="height:'+(v/maxVal*100)+'px"></div><div class="bar-lbl">'+weekDays[i]+'</div></div>';
+}).join('');
+
+document.getElementById('recent-ops').innerHTML=[
+  {icon:'💳',title:'Balans to\'ldirildi',sub:'Asilbek Yusupov',amt:'+50,000',plus:true},
+  {icon:'🖥️',title:'PC #7 sessiya',sub:'Asilbek Yusupov',amt:'-50,000',plus:false},
+  {icon:'💳',title:'Balans to\'ldirildi',sub:'Zulfiya Nazarova',amt:'+100,000',plus:true},
+  {icon:'🍔',title:'Bar buyurtma',sub:'Jasur Toshmatov',amt:'-18,000',plus:false},
+].map(function(o){
+  return '<div class="recent-item"><div class="recent-icon">'+o.icon+'</div><div class="recent-info"><div class="recent-title">'+o.title+'</div><div class="recent-sub">'+o.sub+'</div></div><div class="recent-amt '+(o.plus?'plus':'minus')+'">'+o.amt+'</div></div>';
+}).join('');
+
+function renderTodayBookings(){
+  document.getElementById('today-bookings').innerHTML=bookings.slice(0,5).map(function(b){
+    var statusBadge=b.status==='confirmed'?'<span class="badge green">Tasdiqlangan</span>':b.status==='pending'?'<span class="badge yellow">Kutilmoqda</span>':'<span class="badge red">Bekor</span>';
+    var actions=b.status==='pending'?'<button class="btn btn-success btn-sm" onclick="confirmBooking('+b.id+')">✓</button> <button class="btn btn-danger btn-sm" onclick="cancelBooking('+b.id+')">✗</button>':'—';
+    return '<tr><td><b>'+b.client+'</b></td><td>'+b.pc+'</td><td>'+b.time+'</td><td>'+b.dur+'</td><td>'+b.price.toLocaleString()+' so\'m</td><td>'+statusBadge+'</td><td>'+actions+'</td></tr>';
+  }).join('');
+}
+renderTodayBookings();
+
+// ── CLIENTS ──
+function getLevelBadge(l){
+  var labels={1:'🥉 Level 1',2:'🥈 Level 2',3:'🥇 Level 3',4:'💎 Level 4'};
+  var colors={1:'ghost',2:'purple',3:'gold',4:'purple'};
+  return '<span class="badge '+colors[l]+'" style="'+(l===4?'background:rgba(124,111,255,0.15);color:var(--accent)':'')+'">'+labels[l]+'</span>';
+}
+
+function renderClients(list){
+  document.getElementById('clients-table').innerHTML=(list||clients).map(function(c){
+    return '<tr><td><b>'+c.name+'</b></td><td style="color:var(--text2)">'+c.phone+'</td><td style="color:var(--green)"><b>'+c.balance.toLocaleString()+'</b> so\'m</td><td>'+getLevelBadge(c.level)+'</td><td>'+c.sessions+' ta</td><td style="color:var(--text2)">'+c.lastActive+'</td><td><button class="btn btn-primary btn-sm" onclick="openClientTopup('+c.id+')">+ Balans</button></td></tr>';
+  }).join('');
+}
+renderClients();
+
+function filterClients(){
+  var q=document.getElementById('client-search').value.toLowerCase();
+  renderClients(clients.filter(function(c){return c.name.toLowerCase().includes(q)||c.phone.includes(q)}));
+}
+
+function openAddClient(){document.getElementById('add-client-modal').classList.add('show')}
+function addClient(){
+  var name=document.getElementById('new-name').value;
+  var phone=document.getElementById('new-phone').value;
+  var bal=parseInt(document.getElementById('new-balance').value)||0;
+  if(!name){showToast('Ism kiriting!');return;}
+  clients.push({id:clients.length+1,name:name,phone:phone,balance:bal,level:1,sessions:0,lastActive:'Hozir',totalSpent:0});
+  renderClients();closeModal('add-client-modal');
+  document.getElementById('new-name').value='';document.getElementById('new-phone').value='';document.getElementById('new-balance').value='';
+  showToast('✓ Mijoz qo\'shildi!');
+}
+
+function openClientTopup(id){
+  var c=clients.find(function(x){return x.id===id});
+  document.getElementById('topup-client').innerHTML='<option>'+c.name+'</option>';
+  document.getElementById('topup-modal').classList.add('show');
+  document.getElementById('topup-modal')._clientId=id;
+}
+function openTopup(){
+  document.getElementById('topup-client').innerHTML=clients.map(function(c){return'<option value="'+c.id+'">'+c.name+'</option>'}).join('');
+  document.getElementById('topup-modal').classList.add('show');
+}
+function doTopup(){
+  var amount=parseInt(document.getElementById('topup-amount').value)||0;
+  if(!amount){showToast('Summa kiriting!');return;}
+  var modal=document.getElementById('topup-modal');
+  var clientId=modal._clientId||parseInt(document.getElementById('topup-client').value);
+  var c=clients.find(function(x){return x.id===clientId});
+  if(c){c.balance+=amount;renderClients();}
+  closeModal('topup-modal');document.getElementById('topup-amount').value='';modal._clientId=null;
+  showToast('✓ '+amount.toLocaleString()+' so\'m qo\'shildi!');
+}
+
+// ── BOOKINGS ──
+var currentFilter='all';
+function renderBookings(){
+  var list=currentFilter==='all'?bookings:bookings.filter(function(b){return b.status===currentFilter});
+  document.getElementById('bookings-table').innerHTML=list.map(function(b){
+    var statusBadge=b.status==='confirmed'?'<span class="badge green">Tasdiqlangan</span>':b.status==='pending'?'<span class="badge yellow">Kutilmoqda</span>':'<span class="badge red">Bekor</span>';
+    var actions=b.status==='pending'?'<button class="btn btn-success btn-sm" onclick="confirmBooking('+b.id+')">✓ Tasdiqlash</button> <button class="btn btn-danger btn-sm" onclick="cancelBooking('+b.id+')">✗</button>':'—';
+    return '<tr><td><b>'+b.client+'</b></td><td>'+b.pc+'</td><td>'+b.time+'</td><td>'+b.dur+'</td><td>'+b.price.toLocaleString()+' so\'m</td><td>'+statusBadge+'</td><td>'+actions+'</td></tr>';
+  }).join('');
+}
+renderBookings();
+
+function filterBookings(f){
+  currentFilter=f;
+  document.querySelectorAll('.active-filter').forEach(function(b){b.classList.remove('active-filter');b.classList.add('btn-ghost')});
+  renderBookings();
+}
+function confirmBooking(id){
+  var b=bookings.find(function(x){return x.id===id});
+  if(b){b.status='confirmed';renderBookings();renderTodayBookings();
+  document.getElementById('pending-count').textContent=bookings.filter(function(x){return x.status==='pending'}).length;
+  showToast('✓ Bron tasdiqlandi!');}
+}
+function cancelBooking(id){
+  var b=bookings.find(function(x){return x.id===id});
+  if(b){b.status='cancelled';renderBookings();renderTodayBookings();
+  document.getElementById('pending-count').textContent=bookings.filter(function(x){return x.status==='pending'}).length;
+  showToast('Bron bekor qilindi');}
+}
+
+// ── PC MAP ──
+function renderPCMap(){
+  function renderPCs(list,containerId){
+    document.getElementById(containerId).innerHTML=list.map(function(pc){
+      return '<div class="pc-card '+pc.status+'" onclick="openPCModal('+pc.id+')">'+'<div class="pc-num">#'+pc.id+'</div>'+'<div class="pc-status-txt">'+(pc.status==='free'?"Bo'sh":pc.status==='busy'?'Band':'Bron')+'</div>'+(pc.user?'<div class="pc-user">'+pc.user+'</div>':'')+(pc.timer?'<div class="pc-timer">'+pc.timer+'</div>':pc.time?'<div class="pc-timer" style="color:var(--yellow)">'+pc.time+'</div>':'')+'</div>';
+    }).join('');
+  }
+  renderPCs(pcs,'admin-main-pcs');
+  renderPCs(vipPCs,'admin-vip-pcs');
+}
+
+function openPCModal(id){
+  var all=pcs.concat(vipPCs);
+  var pc=all.find(function(p){return p.id===id});
+  document.getElementById('pc-modal-title').textContent='PC #'+id+(id>12?' (VIP)':'');
+  var body='<div style="background:var(--bg3);border-radius:var(--rs);padding:14px;margin-bottom:16px">';
+  body+='<div style="display:flex;justify-content:space-between;margin-bottom:8px"><span style="color:var(--text2)">Status</span><span class="badge '+(pc.status==='free'?'green':pc.status==='busy'?'red':'yellow')+'">'+(pc.status==='free'?"Bo'sh":pc.status==='busy'?'Band':'Bron')+'</span></div>';
+  if(pc.user)body+='<div style="display:flex;justify-content:space-between;margin-bottom:8px"><span style="color:var(--text2)">Mijoz</span><b>'+pc.user+'</b></div>';
+  if(pc.timer)body+='<div style="display:flex;justify-content:space-between"><span style="color:var(--text2)">Vaqt</span><b style="color:var(--accent)">'+pc.timer+'</b></div>';
+  body+='</div>';
+  document.getElementById('pc-modal-body').innerHTML=body;
+  var btns='<button class="btn btn-ghost" onclick="closeModal(\'pc-modal\')">Yopish</button>';
+  if(pc.status!=='free')btns+=' <button class="btn btn-success" onclick="freePС('+id+')">Bo\'shatish</button>';
+  document.getElementById('pc-modal-btns').innerHTML=btns;
+  document.getElementById('pc-modal').classList.add('show');
+}
+
+function freePС(id){
+  var all=pcs.concat(vipPCs);
+  var pc=all.find(function(p){return p.id===id});
+  if(pc){pc.status='free';delete pc.user;delete pc.timer;delete pc.time;}
+  closeModal('pc-modal');renderPCMap();showToast('PC #'+id+" bo'shatildi");
+}
+
+// ── FINANCE ──
+document.getElementById('finance-table').innerHTML=transactions.map(function(t){
+  var isPlus=t.amount>0;
+  return '<tr><td><b>'+t.client+'</b></td><td>'+t.type+'</td><td class="'+(isPlus?'plus':'minus')+'"><b>'+(isPlus?'+':'')+t.amount.toLocaleString()+' so\'m</b></td><td style="color:var(--text2)">'+t.method+'</td><td style="color:var(--text2)">'+t.time+'</td><td><span class="badge green">OK</span></td></tr>';
+}).join('');
+
+// ── ORDERS ──
+document.getElementById('orders-table').innerHTML=orders.map(function(o){
+  var sb=o.status==='delivered'?'<span class="badge green">Yetkazildi</span>':o.status==='new'?'<span class="badge yellow">Yangi</span>':'<span class="badge purple">Tayyorlanmoqda</span>';
+  var action=o.status==='new'?'<button class="btn btn-primary btn-sm">✓ Qabul</button>':o.status==='preparing'?'<button class="btn btn-success btn-sm">✓ Yetkazildi</button>':'—';
+  return '<tr><td><b>'+o.client+'</b></td><td style="color:var(--text2)">'+o.items+'</td><td class="plus"><b>'+o.total.toLocaleString()+' so\'m</b></td><td style="color:var(--text2)">'+o.time+'</td><td>'+sb+'</td><td>'+action+'</td></tr>';
+}).join('');
+
+// ── REPORTS ──
+function renderReports(){
+  var daily=[320,480,390,650,540,820,840];
+  var days=['Du','Se','Ch','Pa','Sh','Ya','Bu'];
+  var max=Math.max.apply(null,daily);
+  document.getElementById('daily-chart').innerHTML=daily.map(function(v,i){
+    return '<div class="bar-col"><div class="bar-val">'+(v)+'K</div><div class="bar-fill" style="height:'+(v/max*100)+'px;background:var(--green)"></div><div class="bar-lbl">'+days[i]+'</div></div>';
+  }).join('');
+
+  document.getElementById('top-clients').innerHTML=clients.sort(function(a,b){return b.sessions-a.sessions}).slice(0,5).map(function(c,i){
+    return '<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)">'+'<div style="width:20px;color:var(--text3);font-size:12px">'+(i+1)+'</div>'+'<div style="flex:1"><div style="font-size:13px;font-weight:500">'+c.name+'</div><div style="font-size:11px;color:var(--text3)">'+c.sessions+' sessiya</div></div>'+'<div style="font-size:12px;color:var(--accent)">'+c.totalSpent.toLocaleString()+' so\'m</div></div>';
+  }).join('');
+}
+</script>
+</body>
+</html>
