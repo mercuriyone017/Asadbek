@@ -1,14 +1,17 @@
 const TelegramBot = require('node-telegram-bot-api');
 const ICAFE_KEY = process.env.ICAFE_API_KEY;
 const ICAFE_SERVER = process.env.ICAFE_SERVER;
+const { HttpsProxyAgent } = require('https-proxy-agent');
 
 async function icafeGet(endpoint) {
   const https = require('https');
+  const proxyAgent = new HttpsProxyAgent(process.env.FIXIE_URL);
   return new Promise((resolve, reject) => {
     const options = {
       hostname: ICAFE_SERVER,
       path: '/api/' + endpoint,
       method: 'GET',
+      agent: proxyAgent,
       headers: {
         'Authorization': 'Bearer ' + ICAFE_KEY,
         'Content-Type': 'application/json'
