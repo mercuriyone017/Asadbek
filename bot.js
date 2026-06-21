@@ -86,13 +86,28 @@ function getLevelInfo(totalSpent) {
 // ─── /start ───
 bot.onText(/\/icafe/, async (msg) => {
   if (String(msg.chat.id) !== String(ADMIN_ID)) return;
-  try {
-    const https = require('https');
-https.get(`https://${ICAFE_SERVER}/api/v2/cafe/88767/pcs`, {headers: {'Authorization': 'Bearer ' + ICAFE_KEY, 'Accept': 'application/json'}}, (res) => {  let d = '';
-  res.on('data', c => d += c);
-  res.on('end', () => bot.sendMessage(msg.chat.id, 'Javob: ' + d.slice(0, 500)));
-}).on('error', e => bot.sendMessage(msg.chat.id, 'Xato: ' + e.message));
-  } catch(e) {
+try {
+      const https = require('https');
+      const options = {
+        hostname: 'api.icafecloud.com',
+        path: '/api/v2/cafe/88767/pcs',
+        method: 'GET',
+        headers: {
+          'Authorization': 'Bearer ' + process.env.ICAFE_API_KEY,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        }
+      };
+      const req = https.request(options, (res) => {
+        let d = '';
+        res.on('data', c => d += c);
+        res.on('end', () => bot.sendMessage(msg.chat.id, 'Javob: ' + d.slice(0, 500)));
+      });
+      req.on('error', e => bot.sendMessage(msg.chat.id, 'Xato: ' + e.message));
+      req.end();
+    } catch(e) {
+      bot.sendMessage(msg.chat.id, '❌ Xato: ' + e.message);
+    }
     bot.sendMessage(msg.chat.id, '❌ Xato: ' + e.message);
   }
 });
