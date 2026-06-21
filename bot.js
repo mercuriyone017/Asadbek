@@ -108,7 +108,6 @@ try {
     } catch(e) {
       bot.sendMessage(msg.chat.id, '❌ Xato: ' + e.message);
     }
-bot.sendMessage(msg.chat.id, '❌ Xato: ' + e.message);  }
 });
 bot.onText(/\/start/, (msg) => {
   const user = getUser(msg.from);
