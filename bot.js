@@ -88,8 +88,7 @@ bot.onText(/\/icafe/, async (msg) => {
   if (String(msg.chat.id) !== String(ADMIN_ID)) return;
   try {
     const https = require('https');
-https.get(`https://${ICAFE_SERVER}/api/v1/computers?token=${ICAFE_KEY}`, (res) => {
-  let d = '';
+https.get(`https://${ICAFE_SERVER}/api/v2/cafe/88767/pcs`, {headers: {'Authorization': 'Bearer ' + ICAFE_KEY, 'Accept': 'application/json'}}, (res) => {  let d = '';
   res.on('data', c => d += c);
   res.on('end', () => bot.sendMessage(msg.chat.id, 'Javob: ' + d.slice(0, 500)));
 }).on('error', e => bot.sendMessage(msg.chat.id, 'Xato: ' + e.message));
